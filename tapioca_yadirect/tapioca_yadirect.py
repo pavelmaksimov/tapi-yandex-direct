@@ -99,10 +99,6 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         except json.JSONDecodeError:
             return response.text
 
-    def format_data_to_request(self, data):
-        if data:
-            return json.dumps(data)
-
     def process_response(self, response):
         if response.status_code == 404:
             raise ResponseProcessException(NotFound404Error, None)
@@ -169,23 +165,23 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         else:
             return df
 
-    def extra_request(self, request_kwargs, response, data, request_num):
-        limit = data.get('result', {}).get('LimitedBy', False)
+    def extra_request(self, current_request_kwargs, request_kwargs_list,
+                      response, current_result):
+        limit = current_result.get('result', {}).get('LimitedBy', False)
         if limit:
+            request_kwargs = current_request_kwargs.copy()
             request_kwargs['data'] = json.loads(request_kwargs['data'])
 
             if request_kwargs['data']['params'].get('Page'):
-                request_kwargs['data']['params']['Page']['Offset'] =\
-                    limit
+                request_kwargs['data']['params']['Page']['Offset'] = limit
             else:
-                request_kwargs['data']['params'].update(
-                    {"Page": {"Offset": limit}})
+                request_kwargs['data']['params']['Page'] = {"Offset": limit}
 
             request_kwargs['data'] = json.dumps(request_kwargs['data'])
+            request_kwargs_list.append(request_kwargs)
 
-            return True, request_kwargs
-        else:
-            return False, {}
+        return request_kwargs_list
+
 
 Yadirect = generate_wrapper_from_adapter(YadirectClientAdapter)
 

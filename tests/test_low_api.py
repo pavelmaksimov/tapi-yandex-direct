@@ -16,7 +16,7 @@ ACCESS_TOKEN = data_loaded['token']
 api = Yadirect(access_token=ACCESS_TOKEN, retry_request_if_limit=True, is_sandbox=True)
 
 
-def test_campaigns():
+def test_get_campaigns():
     r = api.campaigns().get(
         data={
             "method": "get",
@@ -26,6 +26,13 @@ def test_campaigns():
                        }
         })
     print(r)
-    # df = r().to_df()
-    # print(len(df))
-    # print(df)
+
+
+def test_resume_campaigns():
+    r = api.campaigns().post(
+        data={
+            "method": "resume",
+            "params": {"SelectionCriteria": {"Ids": ['320389']},
+                       }
+        })
+    print(r)
