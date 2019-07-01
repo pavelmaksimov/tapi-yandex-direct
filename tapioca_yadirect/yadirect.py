@@ -12,59 +12,71 @@ from tapioca_yadirect.tapioca_yadirect import YadirectClientAdapter
 
 # Максимальное кол-во объектов в одном запросе.
 MAX_COUNT_OBJECTS = {
-    'Ids': 10000,
-    'KeywordIds': 10000,
-    'RetargetingListIds': 1000,
-    'InterestIds': 1000,
-    'AdGroupIds': 1000,
-    'AdIds': 1000,
-    'CampaignIds': 10,
-    'AccountIDS': 100,
-    'Logins': 50
+    "Ids": 10000,
+    "KeywordIds": 10000,
+    "RetargetingListIds": 1000,
+    "InterestIds": 1000,
+    "AdGroupIds": 1000,
+    "AdIds": 1000,
+    "CampaignIds": 10,
+    "AccountIDS": 100,
+    "Logins": 50,
 }
-ID_FIELDS = ['CampaignIds', 'AdGroupIds', 'Ids', 'AdIds',
-             'Logins', 'RetargetingListIds', 'InterestIds',
-             'AccountIDS', 'KeywordIds']
+ID_FIELDS = [
+    "CampaignIds",
+    "AdGroupIds",
+    "Ids",
+    "AdIds",
+    "Logins",
+    "RetargetingListIds",
+    "InterestIds",
+    "AccountIDS",
+    "KeywordIds",
+]
 DICT_KEY_RESPONCE = {
-    'campaigns': 'Campaigns',
-    'adgroups': 'AdGroups',
-    'ads': 'Ads',
-    'audiencetargets': 'AudienceTargets',
-    'dynamictextadtargets': 'Webpages',
-    'creatives': 'Creatives',
-    'adimages': 'AdImages',
-    'vcards': 'VCards',
-    'sitelinks': 'SitelinksSets',
-    'adextensions': 'AdExtensions',
-    'keywords': 'Keywords',
-    'retargetinglists': 'RetargetingLists',
-    'bids': 'Bids',
-    'keywordbids': 'KeywordBids',
-    'bidmodifiers': 'BidModifiers',
-    'clients': 'Clients',
-    'agencyclients': 'Clients',
-    'leads': 'Leads',
-    'changes': NotImplementedError(),
-    'dictionaries': NotImplementedError(),
-    'keywordsresearch': NotImplementedError(),
-    'balance': NotImplementedError(),
+    "campaigns": "Campaigns",
+    "adgroups": "AdGroups",
+    "ads": "Ads",
+    "audiencetargets": "AudienceTargets",
+    "dynamictextadtargets": "Webpages",
+    "creatives": "Creatives",
+    "adimages": "AdImages",
+    "vcards": "VCards",
+    "sitelinks": "SitelinksSets",
+    "adextensions": "AdExtensions",
+    "keywords": "Keywords",
+    "retargetinglists": "RetargetingLists",
+    "bids": "Bids",
+    "keywordbids": "KeywordBids",
+    "bidmodifiers": "BidModifiers",
+    "clients": "Clients",
+    "agencyclients": "Clients",
+    "leads": "Leads",
+    "changes": NotImplementedError(),
+    "dictionaries": NotImplementedError(),
+    "keywordsresearch": NotImplementedError(),
+    "balance": NotImplementedError(),
 }
 # Максимальное кол-во параллельных потоков.
 SIZE_POOL = 5
 
 
 class YadirectLight:
-    CAMPAIGN_STATS = 'campaigns'
-    BANNER_STATS = 'banners'
-    USER_STATS = 'users'
-    _SUMMARY_STATS = 'summary'
-    _DAY_STATS = 'day'
+    CAMPAIGN_STATS = "campaigns"
+    BANNER_STATS = "banners"
+    USER_STATS = "users"
+    _SUMMARY_STATS = "summary"
+    _DAY_STATS = "day"
 
-    def __init__(self, access_token,
-                 as_dataframe=False,
-                 retry_request_if_limit=True,
-                 language='ru',
-                 *args, **kwargs):
+    def __init__(
+        self,
+        access_token,
+        as_dataframe=False,
+        retry_request_if_limit=True,
+        language="ru",
+        *args,
+        **kwargs
+    ):
         """
         Обертка над низкоуровневой оберткой Yadirect.
 
@@ -82,12 +94,16 @@ class YadirectLight:
             access_token=access_token,
             retry_request_if_limit=retry_request_if_limit,
             language=language,
-            *args, **kwargs)
+            *args,
+            **kwargs
+        )
         self.low_api = Yadirect(
             access_token=access_token,
             retry_request_if_limit=retry_request_if_limit,
             language=language,
-            *args, **kwargs)
+            *args,
+            **kwargs
+        )
         self.as_dataframe = as_dataframe
 
     def _grouper_list(self, arr, count):
@@ -105,11 +121,13 @@ class YadirectLight:
         :param delta: int : кол-во дней в одном периоде
         :return: [..., ('2019-01-01', '2019-01-01')]
         """
-        if not isinstance(date_from, datetime) and \
-            not isinstance(date_from, datetime_.date):
+        if not isinstance(date_from, datetime) and not isinstance(
+            date_from, datetime_.date
+        ):
             date_from = parser.parse(date_from)
-        if not isinstance(date_from, datetime) and \
-            not isinstance(date_from, datetime_.date):
+        if not isinstance(date_from, datetime) and not isinstance(
+            date_from, datetime_.date
+        ):
             date_to = parser.parse(date_to)
 
         periods = []
@@ -119,11 +137,11 @@ class YadirectLight:
             dt2 = dt1 + timedelta(delta)
             if dt2 > date_to:
                 if dt1 <= date_to:
-                    periods.append((dt1.strftime('%Y-%m-%d'),
-                                    date_to.strftime('%Y-%m-%d')))
+                    periods.append(
+                        (dt1.strftime("%Y-%m-%d"), date_to.strftime("%Y-%m-%d"))
+                    )
                 break
-            periods.append((dt1.strftime('%Y-%m-%d'),
-                            dt2.strftime('%Y-%m-%d')))
+            periods.append((dt1.strftime("%Y-%m-%d"), dt2.strftime("%Y-%m-%d")))
         return periods
 
     def _stats_to_df(self, results):
@@ -132,14 +150,14 @@ class YadirectLight:
             df_list = []
             for result in results:
                 result = result().data
-                for i in result['items']:
-                    rows = i.get('rows') or i.get('total')
+                for i in result["items"]:
+                    rows = i.get("rows") or i.get("total")
                     df_ = json_normalize(rows)
-                    df_['id'] = i['id']
+                    df_["id"] = i["id"]
                     df_list.append(df_)
             df = pd.concat(df_list, sort=False).reset_index(drop=True)
         except Exception:
-            raise TypeError('Не удалось преобразовать в DataFrame')
+            raise TypeError("Не удалось преобразовать в DataFrame")
         else:
             return df
 
@@ -149,19 +167,17 @@ class YadirectLight:
             df_list = []
             for result in results:
                 data = result().data
-                df_ = json_normalize(data.get('items') or result)
+                df_ = json_normalize(data.get("items") or result)
                 df_list.append(df_)
             df = pd.concat(df_list, sort=False).reset_index(drop=True)
         except Exception:
-            raise TypeError('Не удалось преобразовать в DataFrame')
+            raise TypeError("Не удалось преобразовать в DataFrame")
         else:
             return df
 
-    def _to_format(self, method, results, as_dataframe=None,
-                   is_union_results=True):
+    def _to_format(self, method, results, as_dataframe=None, is_union_results=True):
         """Преобразует в указанный формат."""
-        if (self.as_dataframe and as_dataframe is not False) \
-            or as_dataframe:
+        if (self.as_dataframe and as_dataframe is not False) or as_dataframe:
             if method == self.get_stats.__name__:
                 return self._stats_to_df(results)
             else:
@@ -172,23 +188,23 @@ class YadirectLight:
             union = []
             for result in results:
                 try:
-                    union += result().data['items']
+                    union += result().data["items"]
                 except KeyError:
-                    logging.info('Не смог найти ключ items в {}'
-                                 .format(result))
+                    logging.info("Не смог найти ключ items в {}".format(result))
                     raise
             return union
         else:
             # Каждый ответ отдельно, в списке.
             return results
 
-    def _request_objects(self, resource, limit=None, params=None,
-                         limit_in_request=50, as_dataframe=False):
+    def _request_objects(
+        self, resource, limit=None, params=None, limit_in_request=50, as_dataframe=False
+    ):
         """Метод запрашивает все объекты."""
-        if params and params.get('limit'):
-            raise ValueError('Укажите limit при вызове метода, а не в параметре.')
+        if params and params.get("limit"):
+            raise ValueError("Укажите limit при вызове метода, а не в параметре.")
         params = params or {}
-        offset = params.get('offset') or 0
+        offset = params.get("offset") or 0
         # 1 ставим, чтоб сделать первый запрос,
         # далее из ответа станет ясно, сколько еще сделать запросов.
         count = limit or 1
@@ -201,33 +217,30 @@ class YadirectLight:
                 # кол-во запрашиваемых объектов до оставшегося кол-ва.
                 limit_in_request = count - offset
 
-            params_ = {
-                'limit': limit_in_request,
-                'offset': offset,
-                **params
-            }
+            params_ = {"limit": limit_in_request, "offset": offset, **params}
             result = resource.get(params=params_)
             data = result().data
             results.append(result)
 
-            if not data.get('count'):
+            if not data.get("count"):
                 # Есть нет count, значит есть только один объект.
                 break
-            elif limit and data.get('count') < limit:
+            elif limit and data.get("count") < limit:
                 # Если объектов меньше, чем указанно в limit,
                 # то уменьшается кол-во объектов которое будет получено.
-                count = data.get('count')
+                count = data.get("count")
             elif limit:
                 # Запрашивается столько объектов сколько в limit.
                 count = limit
             else:
                 # Получение всех объектов.
-                count = data.get('count')
+                count = data.get("count")
 
-            offset = data['offset'] + limit_in_request
+            offset = data["offset"] + limit_in_request
 
-        return self._to_format(self._request_objects.__name__,
-                               results, as_dataframe=as_dataframe)
+        return self._to_format(
+            self._request_objects.__name__, results, as_dataframe=as_dataframe
+        )
 
     def _get_objects_for_request_stats(self, object_type, limit):
         """
@@ -236,31 +249,42 @@ class YadirectLight:
         """
         if object_type == self.CAMPAIGN_STATS:
             data = self.get_campaigns(
-                limit=limit, as_dataframe=False, params={'fields': 'id'})
-            ids = [i['id'] for i in data]
+                limit=limit, as_dataframe=False, params={"fields": "id"}
+            )
+            ids = [i["id"] for i in data]
 
         elif object_type == self.BANNER_STATS:
             data = self.get_banners(
-                limit=limit, as_dataframe=False, params={'fields': 'id'})
-            ids = [i['id'] for i in data]
+                limit=limit, as_dataframe=False, params={"fields": "id"}
+            )
+            ids = [i["id"] for i in data]
 
         elif object_type == self.USER_STATS:
             r = self.low_api.user2().get()
             data = r().data
-            ids = [data['id']]
+            ids = [data["id"]]
         else:
-            raise ValueError('Не известный object_type, '
-                             'разерешены только: {}, {}, {}'
-                             .format(self.CAMPAIGN_STATS,
-                                     self.BANNER_STATS,
-                                     self.USER_STATS))
+            raise ValueError(
+                "Не известный object_type, "
+                "разерешены только: {}, {}, {}".format(
+                    self.CAMPAIGN_STATS, self.BANNER_STATS, self.USER_STATS
+                )
+            )
         return ids
 
-    def get_stats(self, object_type=CAMPAIGN_STATS,
-                  date_from=None, date_to=None, metrics=None,
-                  ids=None, as_dataframe=None, limit=None,
-                  limit_in_request=200, interval=92,
-                  is_union_results=True):
+    def get_stats(
+        self,
+        object_type=CAMPAIGN_STATS,
+        date_from=None,
+        date_to=None,
+        metrics=None,
+        ids=None,
+        as_dataframe=None,
+        limit=None,
+        limit_in_request=200,
+        interval=92,
+        is_union_results=True,
+    ):
         """
         https://target.my.com/adv/api-marketing/doc/stat-v2
 
@@ -349,20 +373,19 @@ class YadirectLight:
         }
         """
         if limit_in_request > 200:
-            raise ValueError('limit_in_request должен быть <= 200')
+            raise ValueError("limit_in_request должен быть <= 200")
         if interval > 92:
-            raise ValueError('delta_period должен быть <= 92')
+            raise ValueError("delta_period должен быть <= 92")
         if interval < 1:
-            raise ValueError('interval должен быть больше 0')
+            raise ValueError("interval должен быть больше 0")
 
         if not ids:
-            ids = self._get_objects_for_request_stats(
-                object_type, limit=limit)
+            ids = self._get_objects_for_request_stats(object_type, limit=limit)
 
         get_params = {}
         if metrics:
             if isinstance(metrics, list):
-                metrics = ','.join(map(str, metrics))
+                metrics = ",".join(map(str, metrics))
             get_params.update(metrics=metrics)
 
         if date_from or date_to:
@@ -370,8 +393,7 @@ class YadirectLight:
             # Если запрашиваемый интервал превышает,
             # то разделяется на несколько перидов.
             time_mode = self._DAY_STATS
-            periods = self._period_range(
-                date_from, date_to, delta=interval - 1)
+            periods = self._period_range(date_from, date_to, delta=interval - 1)
         else:
             time_mode = self._SUMMARY_STATS
             periods = [{}]
@@ -382,24 +404,26 @@ class YadirectLight:
 
         results = []
         for ids in ids_groups:
-            ids_str = ','.join(map(str, ids))
+            ids_str = ",".join(map(str, ids))
 
             for period in periods:
                 if period:
                     get_params.update(date_from=period[0])
                     get_params.update(date_to=period[1])
 
-                result = self.low_api.stats2(object_type=object_type,
-                                             time_mode=time_mode, ids=ids_str) \
-                    .get(params=get_params)
+                result = self.low_api.stats2(
+                    object_type=object_type, time_mode=time_mode, ids=ids_str
+                ).get(params=get_params)
 
                 results.append(result)
 
-        return self._to_format(self.get_stats.__name__, results,
-                               as_dataframe, is_union_results)
+        return self._to_format(
+            self.get_stats.__name__, results, as_dataframe, is_union_results
+        )
 
-    def get_campaigns(self, params=None, as_dataframe=None,
-                      limit=None, limit_in_request=50):
+    def get_campaigns(
+        self, params=None, as_dataframe=None, limit=None, limit_in_request=50
+    ):
         """
         https://target.my.com/doc/apiv2/ru/resources/campaigns.html
         https://target.my.com/doc/apiv2/ru/objects/ads2.api_v2.campaigns.CampaignResource.html
@@ -431,13 +455,17 @@ class YadirectLight:
         :param as_dataframe: bool : вернуть в формате dataframe
         :return: list, dataframe
         """
-        return self._request_objects(resource=self.low_api.campaigns2(),
-                                     limit=limit, params=params,
-                                     limit_in_request=limit_in_request,
-                                     as_dataframe=as_dataframe)
+        return self._request_objects(
+            resource=self.low_api.campaigns2(),
+            limit=limit,
+            params=params,
+            limit_in_request=limit_in_request,
+            as_dataframe=as_dataframe,
+        )
 
-    def get_banners(self, params=None, as_dataframe=None,
-                    limit=None, limit_in_request=50):
+    def get_banners(
+        self, params=None, as_dataframe=None, limit=None, limit_in_request=50
+    ):
         """
         https://target.my.com/doc/apiv2/ru/resources/banners.html
         https://target.my.com/doc/apiv2/ru/objects/ads2.api_v2.banners.BannerResource.html
@@ -468,7 +496,10 @@ class YadirectLight:
         :param as_dataframe: bool : вернуть в формате dataframe
         :return: list, dataframe
         """
-        return self._request_objects(resource=self.low_api.banners2(),
-                                     limit=limit, params=params,
-                                     limit_in_request=limit_in_request,
-                                     as_dataframe=as_dataframe)
+        return self._request_objects(
+            resource=self.low_api.banners2(),
+            limit=limit,
+            params=params,
+            limit_in_request=limit_in_request,
+            as_dataframe=as_dataframe,
+        )

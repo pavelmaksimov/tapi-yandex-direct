@@ -3,8 +3,7 @@ import json
 import logging
 import time
 
-from tapioca import (
-    TapiocaAdapter, generate_wrapper_from_adapter, JSONAdapterMixin)
+from tapioca import TapiocaAdapter, generate_wrapper_from_adapter, JSONAdapterMixin
 from tapioca.exceptions import ResponseProcessException, ClientError
 
 from tapioca_yadirect import exceptions
@@ -12,11 +11,11 @@ from .resource_mapping import RESOURCE_MAPPING_V5
 
 
 class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
-    end_point = 'https://{}/'
+    end_point = "https://{}/"
     api_root = end_point
 
-    PRODUCTION_HOST = 'api.direct.yandex.com'
-    SANDBOX_HOST = 'api-sandbox.direct.yandex.com'
+    PRODUCTION_HOST = "api.direct.yandex.com"
+    SANDBOX_HOST = "api-sandbox.direct.yandex.com"
 
     resource_mapping = RESOURCE_MAPPING_V5
 
@@ -47,52 +46,51 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         super().__init__(*args, **kwargs)
 
     def get_api_root(self, api_params):
-        if api_params.get('is_sandbox', False):
+        if api_params.get("is_sandbox", False):
             return self.end_point.format(self.SANDBOX_HOST)
         return self.end_point.format(self.PRODUCTION_HOST)
 
     def get_request_kwargs(self, api_params, *args, **kwargs):
         params = super().get_request_kwargs(api_params, *args, **kwargs)
 
-        token = api_params.get('access_token')
+        token = api_params.get("access_token")
         if token:
-            params['headers'].update(
-                {'Authorization': 'Bearer {}'.format(token)})
+            params["headers"].update({"Authorization": "Bearer {}".format(token)})
 
-        login = api_params.get('login')
+        login = api_params.get("login")
         if login:
-            params['headers'].update({'Client-Login': login})
+            params["headers"].update({"Client-Login": login})
 
-        use_operator_units = api_params.get('use_operator_units')
+        use_operator_units = api_params.get("use_operator_units")
         if use_operator_units:
-            params['headers'].update({'Use-Operator-Units': use_operator_units})
+            params["headers"].update({"Use-Operator-Units": use_operator_units})
 
-        if api_params.get('language', False):
-            params['headers'].update(
-                {'Accept-Language': api_params.get('language')})
+        if api_params.get("language", False):
+            params["headers"].update({"Accept-Language": api_params.get("language")})
         else:
-            params['headers'].update({'Accept-Language': 'ru'})
+            params["headers"].update({"Accept-Language": "ru"})
 
         return params
 
     def get_error_message(self, data, response=None):
         try:
             if not data and response.content.strip():
-                data = json.loads(response.content.decode('utf-8'))
+                data = json.loads(response.content.decode("utf-8"))
 
             if data:
-                return data.get('error', None)
+                return data.get("error", None)
         except json.JSONDecodeError:
             return response.text
 
     def process_response(self, response):
         data = super().process_response(response)
-        if data.get('error'):
+        if data.get("error"):
             raise ResponseProcessException(ClientError, data)
         return data
 
-    def wrapper_call_exception(self, response, tapioca_exception,
-                               api_params, *args, **kwargs):
+    def wrapper_call_exception(
+        self, response, tapioca_exception, api_params, *args, **kwargs
+    ):
         if 500 <= response.status_code < 600:
             raise exceptions.YadirectServerError(response)
         else:
@@ -101,7 +99,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             except json.JSONDecodeError:
                 raise exceptions.YadirectApiError(response)
             else:
-                error_code = jdata.get('error').get('error_code', 0)
+                error_code = jdata.get("error").get("error_code", 0)
 
                 if error_code == 152:
                     raise exceptions.YadirectLimitError(response)
@@ -117,8 +115,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             except json.JSONDecodeError:
                 return response.text
 
-    def retry_request(self, response, tapioca_exception, api_params,
-                      *args, **kwargs):
+    def retry_request(self, response, tapioca_exception, api_params, *args, **kwargs):
         """
         Условия повторения запроса.
 
@@ -127,29 +124,30 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         response_data = tapioca_exception.client().data
         """
         response_data = tapioca_exception.client().data
-        error_code = response_data.get('error', {}).get('error_code', 0)
+        error_code = response_data.get("error", {}).get("error_code", 0)
         if error_code == 152:
-            if api_params.get('retry_request_if_limit', False):
-                logging.debug('Исчерпан лимит, повтор через 1 минуту')
+            if api_params.get("retry_request_if_limit", False):
+                logging.debug("Исчерпан лимит, повтор через 1 минуту")
                 time.sleep(60)
                 return True
             else:
-                logging.debug('Исчерпан лимит запросов')
+                logging.debug("Исчерпан лимит запросов")
         return False
 
-    def extra_request(self, current_request_kwargs, request_kwargs_list,
-                      response, current_result):
-        limit = current_result.get('result', {}).get('LimitedBy', False)
+    def extra_request(
+        self, current_request_kwargs, request_kwargs_list, response, current_result
+    ):
+        limit = current_result.get("result", {}).get("LimitedBy", False)
         if limit:
             request_kwargs = current_request_kwargs.copy()
-            request_kwargs['data'] = json.loads(request_kwargs['data'])
+            request_kwargs["data"] = json.loads(request_kwargs["data"])
 
-            if request_kwargs['data']['params'].get('Page'):
-                request_kwargs['data']['params']['Page']['Offset'] = limit
+            if request_kwargs["data"]["params"].get("Page"):
+                request_kwargs["data"]["params"]["Page"]["Offset"] = limit
             else:
-                request_kwargs['data']['params']['Page'] = {"Offset": limit}
+                request_kwargs["data"]["params"]["Page"] = {"Offset": limit}
 
-            request_kwargs['data'] = json.dumps(request_kwargs['data'])
+            request_kwargs["data"] = json.dumps(request_kwargs["data"])
             request_kwargs_list.append(request_kwargs)
 
         return request_kwargs_list
