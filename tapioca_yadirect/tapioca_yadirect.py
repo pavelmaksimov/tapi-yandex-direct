@@ -139,6 +139,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     ):
         limit = current_result.get("result", {}).get("LimitedBy", False)
         if limit:
+            # Дополнительный запрос, если не все данные получены.
             request_kwargs = current_request_kwargs.copy()
             request_kwargs["data"] = json.loads(request_kwargs["data"])
 
