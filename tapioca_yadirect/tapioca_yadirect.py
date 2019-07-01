@@ -124,7 +124,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         response_data = tapioca_exception.client().data
         """
         response_data = tapioca_exception.client().data
-        error_code = response_data.get("error", {}).get("error_code", 0)
+        error_code = (response_data or {}).get("error", {}).get("error_code", 0)
         if error_code == 152:
             if api_params.get("retry_request_if_limit", False):
                 logging.debug("Исчерпан лимит, повтор через 1 минуту")
