@@ -3,15 +3,12 @@ import json
 import logging
 import time
 
-from pandas.io.json import json_normalize
 from tapioca import (
-    TapiocaAdapter, generate_wrapper_from_adapter, JSONAdapterMixin, )
-from tapioca.exceptions import ResponseProcessException, ClientError, ServerError, NotFound404Error
+    TapiocaAdapter, generate_wrapper_from_adapter, JSONAdapterMixin)
+from tapioca.exceptions import ResponseProcessException, ClientError
 
 from tapioca_yadirect import exceptions
 from .resource_mapping import RESOURCE_MAPPING_V5
-
-logging.basicConfig(level=logging.INFO)
 
 
 class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
@@ -20,6 +17,8 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
     PRODUCTION_HOST = 'api.direct.yandex.com'
     SANDBOX_HOST = 'api-sandbox.direct.yandex.com'
+
+    resource_mapping = RESOURCE_MAPPING_V5
 
     def __init__(self, *args, **kwargs):
         """
@@ -45,15 +44,6 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         data = result().data  # данные в формате json
         df = result().to_df()  # данные в формате pandas dataframe
         """
-        version = kwargs.get('v')
-        if version:
-            if version == 5:
-                self.resource_mapping = RESOURCE_MAPPING_V5
-            else:
-                raise Exception('Для версии {} не указана схема ресурсов'.format(version))
-        else:
-            self.resource_mapping = RESOURCE_MAPPING_V5
-
         super().__init__(*args, **kwargs)
 
     def get_api_root(self, api_params):
@@ -96,16 +86,6 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             return response.text
 
     def process_response(self, response):
-        if response.status_code == 404:
-            raise ResponseProcessException(NotFound404Error, None)
-        elif 500 <= response.status_code < 600:
-            raise ResponseProcessException(ServerError, None)
-
-        data = self.response_to_native(response)
-
-        if 400 <= response.status_code < 500:
-            raise ResponseProcessException(ClientError, data)
-
         data = super().process_response(response)
         if data.get('error'):
             raise ResponseProcessException(ClientError, data)
@@ -113,7 +93,6 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
     def wrapper_call_exception(self, response, tapioca_exception,
                                api_params, *args, **kwargs):
-
         if 500 <= response.status_code < 600:
             raise exceptions.YadirectServerError(response)
         else:
@@ -131,6 +110,13 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                 else:
                     raise YadirectClientAdapter(response)
 
+    def response_to_native(self, response):
+        if response.content.strip():
+            try:
+                return response.json()
+            except json.JSONDecodeError:
+                return response.text
+
     def retry_request(self, response, tapioca_exception, api_params,
                       *args, **kwargs):
         """
@@ -141,7 +127,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         response_data = tapioca_exception.client().data
         """
         response_data = tapioca_exception.client().data
-        error_code = response_data.get('error').get('error_code', 0)
+        error_code = response_data.get('error', {}).get('error_code', 0)
         if error_code == 152:
             if api_params.get('retry_request_if_limit', False):
                 logging.debug('Исчерпан лимит, повтор через 1 минуту')
@@ -150,16 +136,6 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             else:
                 logging.debug('Исчерпан лимит запросов')
         return False
-
-    def to_df(self, data, *args, **kwargs):
-        """Преобразование в DataFrame"""
-        print(*args, **kwargs)
-        try:
-            df = json_normalize(data.get('result'))
-        except Exception:
-            raise TypeError('Не удалось преобразовать в DataFrame')
-        else:
-            return df
 
     def extra_request(self, current_request_kwargs, request_kwargs_list,
                       response, current_result):
