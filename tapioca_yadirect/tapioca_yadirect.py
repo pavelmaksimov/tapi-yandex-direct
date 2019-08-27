@@ -21,30 +21,6 @@ MAX_COUNT_OBJECTS = {
     "AccountIDS": 100,
     "Logins": 50,
 }
-DICT_KEY_RESPONCE = {
-    "campaigns": "Campaigns",
-    "adgroups": "AdGroups",
-    "ads": "Ads",
-    "audiencetargets": "AudienceTargets",
-    "dynamictextadtargets": "Webpages",
-    "creatives": "Creatives",
-    "adimages": "AdImages",
-    "vcards": "VCards",
-    "sitelinks": "SitelinksSets",
-    "adextensions": "AdExtensions",
-    "keywords": "Keywords",
-    "retargetinglists": "RetargetingLists",
-    "bids": "Bids",
-    "keywordbids": "KeywordBids",
-    "bidmodifiers": "BidModifiers",
-    "clients": "Clients",
-    "agencyclients": "Clients",
-    "leads": "Leads",
-    "changes": NotImplementedError(),
-    "dictionaries": NotImplementedError(),
-    "keywordsresearch": NotImplementedError(),
-    "balance": NotImplementedError(),
-}
 
 
 class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
@@ -97,9 +73,9 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         ids_fields = [i for i in filters.keys() if i in MAX_COUNT_OBJECTS]
         if len(ids_fields) > 1:
             raise Exception(
-                'Не умею генерировать несколько запросов, '
-                'когда в условиях фильтрации несколько типов идентификаторов, '
-                'например кампаний и групп. Оставьте что-то одно.'
+                "Не умею генерировать несколько запросов, "
+                "когда в условиях фильтрации несколько типов идентификаторов, "
+                "например кампаний и групп. Оставьте что-то одно."
             )
         elif ids_fields:
             ids_field = ids_fields[0]
@@ -113,9 +89,13 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                 # создаются несколько запросов.
                 request_kwargs_list = []
                 while ids:
-                    kwargs["data"]["params"]['SelectionCriteria'][ids_field] = ids[:group_size]
+                    kwargs["data"]["params"]["SelectionCriteria"][ids_field] = ids[
+                        :group_size
+                    ]
                     del ids[:group_size]
-                    request_kwargs = self.get_request_kwargs(api_params, *args, **kwargs)
+                    request_kwargs = self.get_request_kwargs(
+                        api_params, *args, **kwargs
+                    )
                     request_kwargs_list.append(request_kwargs)
 
                 return request_kwargs_list
