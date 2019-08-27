@@ -6,7 +6,7 @@ import time
 from tapioca import TapiocaAdapter, generate_wrapper_from_adapter, JSONAdapterMixin
 from tapioca.exceptions import ResponseProcessException, ClientError
 
-from tapioca_yadirect import exceptions
+from tapioca_yandex_direct import exceptions
 from .resource_mapping import RESOURCE_MAPPING_V5
 
 # Максимальное кол-во объектов в одном запросе.
@@ -23,7 +23,7 @@ MAX_COUNT_OBJECTS = {
 }
 
 
-class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
+class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     end_point = "https://{}/"
     api_root = end_point
 
@@ -49,7 +49,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         :param is_sandbox: bool : включить песочницу
         :param v: int : 5 : версия апи, по умолчанию 5
 
-        low_api = Yadirect(access_token=ACCESS_TOKEN,
+        low_api = YandexDirect(access_token=ACCESS_TOKEN,
                            use_operator_units=True,
                            retry_request_if_limit=True)
         result = low_api.user2().get()
@@ -103,6 +103,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         return [self.get_request_kwargs(api_params, *args, **kwargs)]
 
     def get_request_kwargs(self, api_params, *args, **kwargs):
+        """Обогащение запроса, параметрами"""
         params = super().get_request_kwargs(api_params, *args, **kwargs)
 
         token = api_params.get("access_token")
@@ -158,7 +159,7 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                 elif error_code == 53:
                     raise exceptions.YadirectTokenError(response)
                 else:
-                    raise YadirectClientAdapter(response)
+                    raise YandexDirectClientAdapter(response)
 
     def response_to_native(self, response):
         if response.content.strip():
@@ -206,4 +207,4 @@ class YadirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         return request_kwargs_list
 
 
-Yadirect = generate_wrapper_from_adapter(YadirectClientAdapter)
+YandexDirect = generate_wrapper_from_adapter(YandexDirectClientAdapter)

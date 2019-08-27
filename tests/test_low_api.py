@@ -3,7 +3,7 @@ import logging
 import yaml
 from pandas import set_option
 
-from tapioca_yadirect import Yadirect
+from tapioca_yandex_direct import YandexDirect
 
 set_option("display.max_columns", 100)
 set_option("display.width", 1500)
@@ -15,7 +15,7 @@ with open("../config.yml", "r") as stream:
 
 ACCESS_TOKEN = data_loaded["token"]
 
-api = Yadirect(
+api = YandexDirect(
     access_token=ACCESS_TOKEN, retry_request_if_limit=False, is_sandbox=False
 )
 

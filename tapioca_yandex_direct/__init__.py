@@ -5,4 +5,4 @@ __email__ = 'vur21@ya.com'
 __version__ = '2019.8.27'
 
 
-from .tapioca_yadirect import Yadirect
+from .tapioca_yandex_direct import YandexDirect
