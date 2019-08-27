@@ -1,12 +1,8 @@
 # coding: utf-8
 import logging
 import yaml
-from pandas import set_option
 
 from tapioca_yandex_direct import YandexDirect
-
-set_option("display.max_columns", 100)
-set_option("display.width", 1500)
 
 logging.basicConfig(level=logging.DEBUG)
 
