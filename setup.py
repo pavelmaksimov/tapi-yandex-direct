@@ -18,7 +18,7 @@ try:
 except (IOError, ImportError):
     readme = ""
 
-package = "tapioca_yadirect"
+package = "tapioca_yandex_direct"
 
 
 def get_version(package):
@@ -41,19 +41,19 @@ if sys.argv[-1] == "publish":
     sys.exit()
 
 setup(
-    name="tapioca-yadirect",
+    name="tapioca-yandex-direct",
     version=get_version(package),
-    description="Yadirect API wrapper using tapioca",
+    description="Yandex Direct API wrapper using tapioca",
     long_description=readme,
     author="Pavel Maksimov",
     author_email="vur21@ya.ru",
     url="https://github.com/pavelmaksimov/tapioca-yadirect",
-    packages=["tapioca_yadirect"],
-    package_dir={"tapioca_yadirect": "tapioca_yadirect"},
+    packages=["tapioca_yandex_direct"],
+    package_dir={"tapioca_yandex_direct": "tapioca_yandex_direct"},
     include_package_data=True,
-    install_requires=["pandas", "requests-oauthlib>=0.4.2"],
+    install_requires=["requests-oauthlib>=0.4.2"],
     license="BSD",
     zip_safe=False,
-    keywords="tapioca-yadirect",
+    keywords="tapioca-yandex-direct",
     test_suite="tests",
 )
