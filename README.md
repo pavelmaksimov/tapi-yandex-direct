@@ -1,4 +1,4 @@
-# Python библиотека для запросов к API Mytarget
+# Python библиотека для запросов к [API Яндекс Директ](https://yandex.ru/dev/direct/)
 
 Написано на версии python 3.5
 
@@ -11,6 +11,9 @@ pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yadirect.git
 ## Документация
 
 будет позже
+
+######Справка Api Яндекс Директ https://yandex.ru/dev/direct/
+
 
 ## Зависимости
 - requests 
