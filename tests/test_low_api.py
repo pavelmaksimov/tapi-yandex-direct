@@ -35,12 +35,66 @@ def test_get_campaigns():
 
 
 def test_get_bids():
-    r = api.bids().get(
+    r = api.bids().post(
         data={
             "method": "get",
             "params": {
-                "SelectionCriteria": {"CampaignIds": ["320387"]},
-                "FieldNames": ["KeywordId"],
+                "SelectionCriteria": {"CampaignIds": ["45575727"]},
+                "FieldNames": [
+                    "CampaignId",
+                    "AdGroupId",
+                    "KeywordId",
+                    "ServingStatus",
+                    "Bid",
+                    "ContextBid",
+                    "StrategyPriority",
+                    "CompetitorsBids",
+                    "SearchPrices",
+                    "ContextCoverage",
+                    "MinSearchPrice",
+                    "CurrentSearchPrice",
+                    "AuctionBids",
+                ],
+            },
+        }
+    )
+    print(r)
+
+
+def test_get_light_bids():
+    r = api.bids().post(
+        data={
+            "method": "get",
+            "params": {
+                "SelectionCriteria": {
+                    # "AdGroupIds": ["1234567"],
+                    "CampaignIds": [
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                        "45575727",
+                    ]
+                },
+                "FieldNames": [
+                    "CampaignId",
+                    "AdGroupId",
+                    "KeywordId",
+                    "Bid",
+                    "ContextBid",
+                    "ContextCoverage",
+                    "CurrentSearchPrice",
+                    "AuctionBids",
+                ],
             },
         }
     )
@@ -50,5 +104,31 @@ def test_get_bids():
 def test_resume_campaigns():
     r = api.campaigns().post(
         data={"method": "resume", "params": {"SelectionCriteria": {"Ids": ["320389"]}}}
+    )
+    print(r)
+
+
+def test_get_keywords():
+    r = api.keywords().get(
+        data={
+            "method": "get",
+            "params": {
+                "SelectionCriteria": {"Ids": ["16837839710"]},
+                "FieldNames": ["Id", "Keyword", "State", "Status", "Bid", "ContextBid"],
+                # "Page": {"Limit": 1},
+            },
+        }
+    )
+    print(r)
+
+
+def test_keywordbids():
+    r = api.keywordbids().post(
+        data={
+            "method": "set",
+            "params": {
+                "KeywordBids": [{"KeywordId": 16837839710, "SearchBid": 0.33 * 1000000}]
+            },
+        }
     )
     print(r)
