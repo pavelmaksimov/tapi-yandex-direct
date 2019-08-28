@@ -85,4 +85,12 @@ RESOURCE_MAPPING_V5 = {
         "resource": "json/v5/vcards",
         "docs": "https://tech.yandex.ru/direct/doc/ref-v5/vcards/vcards-docpage/",
     },
+    "turbopages": {
+        "resource": "json/v5/turbopages",
+        "docs": "https://yandex.ru/dev/direct/doc/ref-v5/turbopages/turbopages-docpage/",
+    },
+    "negativekeywordsharedsets": {
+        "resource": "json/v5/negativekeywordsharedsets",
+        "docs": "https://yandex.ru/dev/direct/doc/ref-v5/negativekeywordsharedsets/negativekeywordsharedsets-docpage/",
+    },
 }
