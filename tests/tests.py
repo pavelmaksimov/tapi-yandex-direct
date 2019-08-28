@@ -23,11 +23,25 @@ def test_get_campaigns():
             "params": {
                 "SelectionCriteria": {},
                 "FieldNames": ["Id", "Name", "State", "Status", "Type"],
-                "Page": {"Limit": 1},
+                "Page": {"Limit": 100},
             },
         }
     )
     print(r)
+
+
+def test_transfotm():
+    r = api.campaigns().get(
+        data={
+            "method": "get",
+            "params": {
+                "SelectionCriteria": {},
+                "FieldNames": ["Id"],
+                "Page": {"Limit": 100},
+            },
+        }
+    )
+    print(r().transform())
 
 
 def test_get_bids():

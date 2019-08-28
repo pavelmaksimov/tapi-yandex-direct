@@ -21,7 +21,28 @@ MAX_COUNT_OBJECTS = {
     "AccountIDS": 100,
     "Logins": 50,
 }
-
+RESPONSE_DICTIONARY_KEYS = {
+    "https://api.direct.yandex.com/json/v5/campaigns": "Campaigns",
+    "https://api.direct.yandex.com/json/v5/adgroups": "AdGroups",
+    "https://api.direct.yandex.com/json/v5/ads": "Ads",
+    "https://api.direct.yandex.com/json/v5/audiencetargets": "AudienceTargets",
+    "https://api.direct.yandex.com/json/v5/creatives": "Creatives",
+    "https://api.direct.yandex.com/json/v5/adimages": "AdImages",
+    "https://api.direct.yandex.com/json/v5/vcards": "VCards",
+    "https://api.direct.yandex.com/json/v5/sitelinks": "SitelinksSets",
+    "https://api.direct.yandex.com/json/v5/adextensions": "AdExtensions",
+    "https://api.direct.yandex.com/json/v5/keywords": "Keywords",
+    "https://api.direct.yandex.com/json/v5/retargetinglists": "RetargetingLists",
+    "https://api.direct.yandex.com/json/v5/bids": "Bids",
+    "https://api.direct.yandex.com/json/v5/keywordbids": "KeywordBids",
+    "https://api.direct.yandex.com/json/v5/bidmodifiers": "BidModifiers",
+    "https://api.direct.yandex.com/json/v5/agencyclients": "Clients",
+    "https://api.direct.yandex.com/json/v5/clients": "Clients",
+    "https://api.direct.yandex.com/json/v5/leads": "Leads",
+    "https://api.direct.yandex.com/json/v5/dynamictextadtargets": "Webpages",
+    "https://api.direct.yandex.com/json/v5/turbopages": "TurboPages",
+    "https://api.direct.yandex.com/json/v5/negativekeywordsharedsets": "NegativeKeywordSharedSets",
+}
 
 class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     end_point = "https://{}/"
@@ -135,7 +156,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         except json.JSONDecodeError:
             return response.text
 
-    def process_response(self, response):
+    def process_response(self, response, **request_kwargs):
         data = super().process_response(response)
         if data.get("error"):
             raise ResponseProcessException(ClientError, data)
@@ -205,6 +226,19 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             request_kwargs_list.append(request_kwargs)
 
         return request_kwargs_list
+
+    def transform(self, results, request_kwargs, *args, **kwargs):
+        """Преобразование данных"""
+        try:
+            key = RESPONSE_DICTIONARY_KEYS[request_kwargs['url']]
+        except KeyError:
+            raise KeyError('Для этого метода преобразование данных не настроено')
+        else:
+            new_data = []
+            for r in results:
+                data = r.get('result', {}).get(key, [])
+                new_data += data
+            return new_data
 
 
 YandexDirect = generate_wrapper_from_adapter(YandexDirectClientAdapter)
