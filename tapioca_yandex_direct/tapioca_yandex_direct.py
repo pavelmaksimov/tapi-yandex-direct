@@ -55,8 +55,6 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
     def __init__(self, *args, **kwargs):
         """
-        Низкоуровневый API.
-
         :param access_token: str : токен доступа
         :param login: str : Логин рекламодателя — клиента рекламного агентства.
             Обязателен, если запрос осуществляется от имени агентства.
@@ -68,14 +66,6 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         :param retry_request_if_limit: bool : ожидать и повторять запрос,
             если закончилась квота запросов к апи.
         :param is_sandbox: bool : включить песочницу
-        :param v: int : 5 : версия апи, по умолчанию 5
-
-        low_api = YandexDirect(access_token=ACCESS_TOKEN,
-                           use_operator_units=True,
-                           retry_request_if_limit=True)
-        result = low_api.user2().get()
-        data = result().data  # данные в формате json
-        df = result().to_df()  # данные в формате pandas dataframe
         """
         super().__init__(*args, **kwargs)
 
@@ -230,7 +220,10 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     def transform(self, results, request_kwargs, *args, **kwargs):
         """Преобразование данных"""
         try:
-            key = RESPONSE_DICTIONARY_KEYS[request_kwargs['url']]
+            url = request_kwargs['url'].replace(
+                self.SANDBOX_HOST, self.PRODUCTION_HOST
+            )
+            key = RESPONSE_DICTIONARY_KEYS[url]
         except KeyError:
             raise KeyError('Для этого метода преобразование данных не настроено')
         else:
