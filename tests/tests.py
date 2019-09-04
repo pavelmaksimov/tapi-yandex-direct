@@ -2,7 +2,7 @@
 import logging
 import yaml
 
-from tapioca_yandex_direct import YandexDirect
+from tapioca_yandex_direct import YandexDirect, GetTokenYandexDirect
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -10,9 +10,10 @@ with open("../config.yml", "r") as stream:
     data_loaded = yaml.safe_load(stream)
 
 ACCESS_TOKEN = data_loaded["token"]
+CLIENT_ID = data_loaded["client_id"]
 
 api = YandexDirect(
-    access_token=ACCESS_TOKEN, retry_request_if_limit=False, is_sandbox=False
+    access_token=ACCESS_TOKEN, retry_request_if_limit=False, is_sandbox=True
 )
 
 
@@ -30,7 +31,7 @@ def test_get_campaigns():
     print(r)
 
 
-def test_transfotm():
+def test_transform():
     r = api.campaigns().get(
         data={
             "method": "get",
@@ -142,3 +143,8 @@ def test_keywordbids():
         }
     )
     print(r)
+
+
+def test_get_debugtoken():
+    api = GetTokenYandexDirect()
+    api.debugtoken(client_id=CLIENT_ID).open_in_browser()

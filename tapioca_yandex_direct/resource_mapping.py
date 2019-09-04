@@ -94,3 +94,10 @@ RESOURCE_MAPPING_V5 = {
         "docs": "https://yandex.ru/dev/direct/doc/ref-v5/negativekeywordsharedsets/negativekeywordsharedsets-docpage/",
     },
 }
+
+RESOURCE_MAPPING_OAUTH = {
+    "debugtoken": {
+        "resource": "oauth.yandex.ru/authorize?response_type=token&client_id={client_id}",
+        "docs": "https://yandex.ru/dev/direct/doc/dg/concepts/auth-token-docpage/",
+    },
+}

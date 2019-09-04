@@ -7,7 +7,7 @@ from tapioca import TapiocaAdapter, generate_wrapper_from_adapter, JSONAdapterMi
 from tapioca.exceptions import ResponseProcessException, ClientError
 
 from tapioca_yandex_direct import exceptions
-from .resource_mapping import RESOURCE_MAPPING_V5
+from .resource_mapping import RESOURCE_MAPPING_V5, RESOURCE_MAPPING_OAUTH
 
 # Максимальное кол-во объектов в одном запросе.
 MAX_COUNT_OBJECTS = {
@@ -45,8 +45,7 @@ RESPONSE_DICTIONARY_KEYS = {
 }
 
 class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
-    end_point = "https://{}/"
-    api_root = end_point
+    api_root = "https://{}/"
 
     PRODUCTION_HOST = "api.direct.yandex.com"
     SANDBOX_HOST = "api-sandbox.direct.yandex.com"
@@ -71,8 +70,8 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
     def get_api_root(self, api_params):
         if api_params.get("is_sandbox", False):
-            return self.end_point.format(self.SANDBOX_HOST)
-        return self.end_point.format(self.PRODUCTION_HOST)
+            return self.api_root.format(self.SANDBOX_HOST)
+        return self.api_root.format(self.PRODUCTION_HOST)
 
     def generate_request_kwargs(self, api_params, *args, **kwargs):
         """
@@ -234,4 +233,12 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             return new_data
 
 
+class GetTokenYandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
+    resource_mapping = RESOURCE_MAPPING_OAUTH
+
+    def get_api_root(self, api_params):
+        return "https://"
+
+
 YandexDirect = generate_wrapper_from_adapter(YandexDirectClientAdapter)
+GetTokenYandexDirect = generate_wrapper_from_adapter(GetTokenYandexDirectClientAdapter)
