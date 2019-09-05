@@ -170,21 +170,21 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         self, response, tapioca_exception, api_params, *args, **kwargs
     ):
         if 500 <= response.status_code < 600:
-            raise exceptions.YadirectServerError(response)
+            raise exceptions.YandexDirectServerError(response)
         else:
             try:
                 jdata = response.json()
             except json.JSONDecodeError:
-                raise exceptions.YadirectApiError(response)
+                raise exceptions.YandexDirectApiError(response)
             else:
                 error_code = jdata.get("error").get("error_code", 0)
 
                 if error_code == 152:
-                    raise exceptions.YadirectLimitError(response)
+                    raise exceptions.YandexDirectLimitError(response)
                 elif error_code == 53:
-                    raise exceptions.YadirectTokenError(response)
+                    raise exceptions.YandexDirectTokenError(response)
                 else:
-                    raise YandexDirectClientAdapter(response)
+                    raise exceptions.YandexDirectClientError(response)
 
     def response_to_native(self, response):
         if response.content.strip():

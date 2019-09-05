@@ -2,7 +2,7 @@
 import logging
 
 
-class YadirectApiError(Exception):
+class YandexDirectApiError(Exception):
     def __init__(self, response, *args, **kwargs):
         self.response = response
 
@@ -14,11 +14,11 @@ class YadirectApiError(Exception):
         )
 
 
-class YadirectServerError(YadirectApiError):
+class YandexDirectServerError(YandexDirectApiError):
     pass
 
 
-class YadirectClientError(YadirectApiError):
+class YandexDirectClientError(YandexDirectApiError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.jdata = self.response.json()
@@ -34,12 +34,12 @@ class YadirectClientError(YadirectApiError):
         )
 
 
-class YadirectTokenError(YadirectClientError):
+class YandexDirectTokenError(YandexDirectClientError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
-class YadirectLimitError(YadirectApiError):
+class YandexDirectLimitError(YandexDirectApiError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
