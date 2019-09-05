@@ -6,3 +6,4 @@ __version__ = '2019.8.28'
 
 
 from .tapioca_yandex_direct import YandexDirect, GetTokenYandexDirect
+from .resource_mapping import *
