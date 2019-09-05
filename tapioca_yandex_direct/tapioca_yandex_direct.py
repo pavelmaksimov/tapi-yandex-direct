@@ -34,6 +34,9 @@ RESULT_DICTIONARY_KEYS_OF_API_METHODS = {
     "set": "SetResults",
     "setAuto": "SetAutoResults",
     "toggle": "ToggleResults",
+    "checkDictionaries": "result",
+    "checkCampaigns": "result",
+    "check": "result",
     "HasSearchVolumeResults": "HasSearchVolumeResults",
     "get": {
         "https://api.direct.yandex.com/json/v5/campaigns": "Campaigns",
