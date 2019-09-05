@@ -73,17 +73,20 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         :param access_token: str : токен доступа
         :param login: str : Логин рекламодателя — клиента рекламного агентства.
             Обязателен, если запрос осуществляется от имени агентства.
-        :param use_operator_units: bool : Расходовать баллы агентства,
+        :param use_operator_units: bool : False : Расходовать баллы агентства,
             а не рекламодателя при выполнении запроса.
             Заголовок допустим только в запросах от имени агентства.
-        :param language: str : ru|en|{other} :
+        :param language: str : ru|en|{other} : ru
             язык в котором будут возвращены некоторые данные, например справочников.
-        :param retry_if_not_enough_units: bool : ожидать и повторять запрос,
+        :param retry_if_not_enough_units: bool : False : ожидать и повторять запрос,
             если закончилась квота запросов к апи.
-        :param auto_request_generation: bool :
+        :param auto_request_generation: bool : False :
             Сделать несколько запросов, если в условиях фильтрации
             кол-во идентификаторов превышает максмимальное разрешенное кол-во.
-        :param is_sandbox: bool : включить песочницу
+        :param receive_all_objects: bool : False :
+            Если в запросе не будут получены все объекты,
+            то будут сделаны дополнительные запросы.
+        :param is_sandbox: bool : False : включить песочницу
         """
         super().__init__(*args, **kwargs)
 
@@ -218,7 +221,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         self, api_params, current_request_kwargs, request_kwargs_list, response, current_result
     ):
         limit = current_result.get("result", {}).get("LimitedBy", False)
-        if limit:
+        if api_params.get("receive_all_objects") and limit:
             # Дополнительный запрос, если не все данные получены.
             request_kwargs = current_request_kwargs.copy()
             request_kwargs["data"] = json.loads(request_kwargs["data"])
