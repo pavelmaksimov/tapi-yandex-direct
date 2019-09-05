@@ -104,7 +104,8 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         здесь можно создать несколько наборов параметров для того,
         чтобы сделать несколько запросов.
         """
-        if api_params["auto_request_generation"] and kwargs["data"]["method"] == "get":
+        cond = api_params.get("auto_request_generation", False)
+        if cond and kwargs["data"]["method"] == "get":
             filters = kwargs["data"].get("params", {}).get("SelectionCriteria", {})
             ids_fields = [i for i in filters.keys() if i in MAX_COUNT_OBJECTS]
             if len(ids_fields) > 1:
