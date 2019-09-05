@@ -80,6 +80,9 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             язык в котором будут возвращены некоторые данные, например справочников.
         :param retry_request_if_limit: bool : ожидать и повторять запрос,
             если закончилась квота запросов к апи.
+        :param auto_request_generation: bool :
+            Сделать несколько запросов, если в условиях фильтрации
+            кол-во идентификаторов превышает максмимальное разрешенное кол-во.
         :param is_sandbox: bool : включить песочницу
         """
         super().__init__(*args, **kwargs)
@@ -95,14 +98,16 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         здесь можно создать несколько наборов параметров для того,
         чтобы сделать несколько запросов.
         """
-        if kwargs["data"]["method"] == "get":
+        if api_params["auto_request_generation"] and kwargs["data"]["method"] == "get":
             filters = kwargs["data"].get("params", {}).get("SelectionCriteria", {})
             ids_fields = [i for i in filters.keys() if i in MAX_COUNT_OBJECTS]
             if len(ids_fields) > 1:
                 raise Exception(
                     "Не умею генерировать несколько запросов, "
-                    "когда в условиях фильтрации несколько типов идентификаторов, "
-                    "например кампаний и групп. Оставьте что-то одно."
+                    "когда в условиях фильтрации "
+                    "несколько типов идентификаторов, "
+                    "например кампаний и групп. Оставьте что-то одно "
+                    "или отключите auto_request_generation"
                 )
             elif ids_fields:
                 ids_field = ids_fields[0]
