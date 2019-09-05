@@ -79,36 +79,37 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         здесь можно создать несколько наборов параметров для того,
         чтобы сделать несколько запросов.
         """
-        filters = kwargs["data"]["params"].get("SelectionCriteria")
-        ids_fields = [i for i in filters.keys() if i in MAX_COUNT_OBJECTS]
-        if len(ids_fields) > 1:
-            raise Exception(
-                "Не умею генерировать несколько запросов, "
-                "когда в условиях фильтрации несколько типов идентификаторов, "
-                "например кампаний и групп. Оставьте что-то одно."
-            )
-        elif ids_fields:
-            ids_field = ids_fields[0]
-            ids = filters[ids_field]
-            group_size = MAX_COUNT_OBJECTS[ids_field]
+        if kwargs["data"]["method"] == "get":
+            filters = kwargs["data"].get("params", {}).get("SelectionCriteria", {})
+            ids_fields = [i for i in filters.keys() if i in MAX_COUNT_OBJECTS]
+            if len(ids_fields) > 1:
+                raise Exception(
+                    "Не умею генерировать несколько запросов, "
+                    "когда в условиях фильтрации несколько типов идентификаторов, "
+                    "например кампаний и групп. Оставьте что-то одно."
+                )
+            elif ids_fields:
+                ids_field = ids_fields[0]
+                ids = filters[ids_field]
+                group_size = MAX_COUNT_OBJECTS[ids_field]
 
-            if len(ids) > group_size:
-                # Когда кол-во идентификаторов,
-                # которые указано получить, превышают лимит максимального
-                # кол-ва, которое можно запросить в одном запросе,
-                # создаются несколько запросов.
-                request_kwargs_list = []
-                while ids:
-                    kwargs["data"]["params"]["SelectionCriteria"][ids_field] = ids[
-                        :group_size
-                    ]
-                    del ids[:group_size]
-                    request_kwargs = self.get_request_kwargs(
-                        api_params, *args, **kwargs
-                    )
-                    request_kwargs_list.append(request_kwargs)
+                if len(ids) > group_size:
+                    # Когда кол-во идентификаторов,
+                    # которые указано получить, превышают лимит максимального
+                    # кол-ва, которое можно запросить в одном запросе,
+                    # создаются несколько запросов.
+                    request_kwargs_list = []
+                    while ids:
+                        kwargs["data"]["params"]["SelectionCriteria"][ids_field] = ids[
+                            :group_size
+                        ]
+                        del ids[:group_size]
+                        request_kwargs = self.get_request_kwargs(
+                            api_params, *args, **kwargs
+                        )
+                        request_kwargs_list.append(request_kwargs)
 
-                return request_kwargs_list
+                    return request_kwargs_list
 
         return [self.get_request_kwargs(api_params, *args, **kwargs)]
 
@@ -218,19 +219,22 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
     def transform(self, results, request_kwargs, *args, **kwargs):
         """Преобразование данных"""
-        try:
-            url = request_kwargs['url'].replace(
-                self.SANDBOX_HOST, self.PRODUCTION_HOST
-            )
-            key = RESPONSE_DICTIONARY_KEYS[url]
-        except KeyError:
-            raise KeyError('Для этого метода преобразование данных не настроено')
+        if request_kwargs["data"].find('"method": "get"') > -1:
+            try:
+                url = request_kwargs['url'].replace(
+                    self.SANDBOX_HOST, self.PRODUCTION_HOST
+                )
+                key = RESPONSE_DICTIONARY_KEYS[url]
+            except KeyError:
+                raise KeyError('Для этого метода преобразование данных не настроено')
+            else:
+                new_data = []
+                for r in results:
+                    data = r.get('result', {}).get(key, [])
+                    new_data += data
+                return new_data
         else:
-            new_data = []
-            for r in results:
-                data = r.get('result', {}).get(key, [])
-                new_data += data
-            return new_data
+            return results[0]
 
 
 class GetTokenYandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
