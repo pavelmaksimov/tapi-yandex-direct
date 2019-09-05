@@ -249,7 +249,9 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                     )
                     key = key[url]
                 except KeyError:
-                    raise KeyError('Для этого ресурса преобразование данных не настроено')
+                    raise KeyError(
+                        'Для этого ресурса преобразование данных не настроено'
+                    )
                 else:
                     new_data = []
                     for r in results:
@@ -257,6 +259,13 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                         new_data += data
                     return new_data
             else:
+                if len(results) > 1:
+                    logging.warning(
+                        "При преобразовании данных было обнаружено "
+                        "несколько ответов. "
+                        "Такое поведение не предусмотрено. "
+                        "Был извлечен только первый ответ."
+                    )
                 return results[0]["result"][key]
 
 
