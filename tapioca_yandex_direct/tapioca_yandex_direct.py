@@ -148,10 +148,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         if use_operator_units:
             params["headers"].update({"Use-Operator-Units": use_operator_units})
 
-        if api_params.get("language", False):
-            params["headers"].update({"Accept-Language": api_params.get("language")})
-        else:
-            params["headers"].update({"Accept-Language": "ru"})
+        params["headers"].update({"Accept-Language": api_params.get("language", "ru")})
 
         return params
 
