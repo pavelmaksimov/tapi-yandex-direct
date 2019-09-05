@@ -21,28 +21,44 @@ MAX_COUNT_OBJECTS = {
     "AccountIDS": 100,
     "Logins": 50,
 }
-RESPONSE_DICTIONARY_KEYS = {
-    "https://api.direct.yandex.com/json/v5/campaigns": "Campaigns",
-    "https://api.direct.yandex.com/json/v5/adgroups": "AdGroups",
-    "https://api.direct.yandex.com/json/v5/ads": "Ads",
-    "https://api.direct.yandex.com/json/v5/audiencetargets": "AudienceTargets",
-    "https://api.direct.yandex.com/json/v5/creatives": "Creatives",
-    "https://api.direct.yandex.com/json/v5/adimages": "AdImages",
-    "https://api.direct.yandex.com/json/v5/vcards": "VCards",
-    "https://api.direct.yandex.com/json/v5/sitelinks": "SitelinksSets",
-    "https://api.direct.yandex.com/json/v5/adextensions": "AdExtensions",
-    "https://api.direct.yandex.com/json/v5/keywords": "Keywords",
-    "https://api.direct.yandex.com/json/v5/retargetinglists": "RetargetingLists",
-    "https://api.direct.yandex.com/json/v5/bids": "Bids",
-    "https://api.direct.yandex.com/json/v5/keywordbids": "KeywordBids",
-    "https://api.direct.yandex.com/json/v5/bidmodifiers": "BidModifiers",
-    "https://api.direct.yandex.com/json/v5/agencyclients": "Clients",
-    "https://api.direct.yandex.com/json/v5/clients": "Clients",
-    "https://api.direct.yandex.com/json/v5/leads": "Leads",
-    "https://api.direct.yandex.com/json/v5/dynamictextadtargets": "Webpages",
-    "https://api.direct.yandex.com/json/v5/turbopages": "TurboPages",
-    "https://api.direct.yandex.com/json/v5/negativekeywordsharedsets": "NegativeKeywordSharedSets",
+RESULT_DICTIONARY_KEYS_OF_API_METHODS = {
+    "add": "AddResults",
+    "update": "UpdateResults",
+    "unarchive": "UnarchiveResults",
+    "suspend": "SuspendResults",
+    "resume": "ResumeResults",
+    "delete": "DeleteResults",
+    "archive": "ArchiveResults",
+    "moderate": "ModerateResults",
+    "setBids": "SetBidsResults",
+    "set": "SetResults",
+    "setAuto": "SetAutoResults",
+    "toggle": "ToggleResults",
+    "HasSearchVolumeResults": "HasSearchVolumeResults",
+    "get": {
+        "https://api.direct.yandex.com/json/v5/campaigns": "Campaigns",
+        "https://api.direct.yandex.com/json/v5/adgroups": "AdGroups",
+        "https://api.direct.yandex.com/json/v5/ads": "Ads",
+        "https://api.direct.yandex.com/json/v5/audiencetargets": "AudienceTargets",
+        "https://api.direct.yandex.com/json/v5/creatives": "Creatives",
+        "https://api.direct.yandex.com/json/v5/adimages": "AdImages",
+        "https://api.direct.yandex.com/json/v5/vcards": "VCards",
+        "https://api.direct.yandex.com/json/v5/sitelinks": "SitelinksSets",
+        "https://api.direct.yandex.com/json/v5/adextensions": "AdExtensions",
+        "https://api.direct.yandex.com/json/v5/keywords": "Keywords",
+        "https://api.direct.yandex.com/json/v5/retargetinglists": "RetargetingLists",
+        "https://api.direct.yandex.com/json/v5/bids": "Bids",
+        "https://api.direct.yandex.com/json/v5/keywordbids": "KeywordBids",
+        "https://api.direct.yandex.com/json/v5/bidmodifiers": "BidModifiers",
+        "https://api.direct.yandex.com/json/v5/agencyclients": "Clients",
+        "https://api.direct.yandex.com/json/v5/clients": "Clients",
+        "https://api.direct.yandex.com/json/v5/leads": "Leads",
+        "https://api.direct.yandex.com/json/v5/dynamictextadtargets": "Webpages",
+        "https://api.direct.yandex.com/json/v5/turbopages": "TurboPages",
+        "https://api.direct.yandex.com/json/v5/negativekeywordsharedsets": "NegativeKeywordSharedSets",
+    }
 }
+
 
 class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     api_root = "https://{}/"
@@ -91,19 +107,17 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             elif ids_fields:
                 ids_field = ids_fields[0]
                 ids = filters[ids_field]
-                group_size = MAX_COUNT_OBJECTS[ids_field]
+                size = MAX_COUNT_OBJECTS[ids_field]
 
-                if len(ids) > group_size:
+                if len(ids) > size:
                     # Когда кол-во идентификаторов,
                     # которые указано получить, превышают лимит максимального
                     # кол-ва, которое можно запросить в одном запросе,
                     # создаются несколько запросов.
                     request_kwargs_list = []
                     while ids:
-                        kwargs["data"]["params"]["SelectionCriteria"][ids_field] = ids[
-                            :group_size
-                        ]
-                        del ids[:group_size]
+                        kwargs["data"]["params"]["SelectionCriteria"][ids_field] = ids[:size]
+                        del ids[:size]
                         request_kwargs = self.get_request_kwargs(
                             api_params, *args, **kwargs
                         )
@@ -219,22 +233,31 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
     def transform(self, results, request_kwargs, *args, **kwargs):
         """Преобразование данных"""
-        if request_kwargs["data"].find('"method": "get"') > -1:
-            try:
-                url = request_kwargs['url'].replace(
-                    self.SANDBOX_HOST, self.PRODUCTION_HOST
-                )
-                key = RESPONSE_DICTIONARY_KEYS[url]
-            except KeyError:
-                raise KeyError('Для этого метода преобразование данных не настроено')
-            else:
-                new_data = []
-                for r in results:
-                    data = r.get('result', {}).get(key, [])
-                    new_data += data
-                return new_data
+        method = json.loads(request_kwargs["data"])["method"]
+        try:
+            key = RESULT_DICTIONARY_KEYS_OF_API_METHODS[method]
+        except KeyError:
+            raise KeyError(
+                "Для запроса с методом '{}' преобразование "
+                "данных не настроено".format(method)
+            )
         else:
-            return results[0]
+            if method == "get":
+                try:
+                    url = request_kwargs['url'].replace(
+                        self.SANDBOX_HOST, self.PRODUCTION_HOST
+                    )
+                    key = key[url]
+                except KeyError:
+                    raise KeyError('Для этого ресурса преобразование данных не настроено')
+                else:
+                    new_data = []
+                    for r in results:
+                        data = r.get('result', {}).get(key, [])
+                        new_data += data
+                    return new_data
+            else:
+                return results[0]["result"][key]
 
 
 class GetTokenYandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
