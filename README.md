@@ -5,7 +5,7 @@
 ## Установка
 ```
 pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-wrapper#egg=tapioca-wrapper-2019.8.28
-pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yadirect.git
+pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yandex-direct.git
 ```
 
 ## Документация
