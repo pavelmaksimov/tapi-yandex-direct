@@ -215,7 +215,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         return False
 
     def extra_request(
-        self, current_request_kwargs, request_kwargs_list, response, current_result
+        self, api_params, current_request_kwargs, request_kwargs_list, response, current_result
     ):
         limit = current_result.get("result", {}).get("LimitedBy", False)
         if limit:
