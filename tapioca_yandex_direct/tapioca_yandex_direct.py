@@ -78,7 +78,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             Заголовок допустим только в запросах от имени агентства.
         :param language: str : ru|en|{other} :
             язык в котором будут возвращены некоторые данные, например справочников.
-        :param retry_request_if_limit: bool : ожидать и повторять запрос,
+        :param retry_if_not_enough_units: bool : ожидать и повторять запрос,
             если закончилась квота запросов к апи.
         :param auto_request_generation: bool :
             Сделать несколько запросов, если в условиях фильтрации
@@ -209,7 +209,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         response_data = tapioca_exception.client().data
         error_code = (response_data or {}).get("error", {}).get("error_code", 0)
         if error_code == 152:
-            if api_params.get("retry_request_if_limit", False):
+            if api_params.get("retry_if_not_enough_units", False):
                 logging.debug("Исчерпан лимит, повтор через 1 минуту")
                 time.sleep(60)
                 return True
