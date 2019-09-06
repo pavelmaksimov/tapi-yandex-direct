@@ -278,6 +278,8 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                         "Такое поведение не предусмотрено. "
                         "Был извлечен только первый ответ."
                     )
+                if key == "result":
+                    return results[0]["result"]
                 return results[0]["result"][key]
 
 
