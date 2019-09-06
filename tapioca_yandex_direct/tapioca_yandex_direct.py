@@ -121,6 +121,9 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                 ids = filters[ids_field]
                 size = MAX_COUNT_OBJECTS[ids_field]
 
+                if not isinstance(ids, list):
+                    raise TypeError("Поле {} должно быть списком".format(ids_field))
+
                 if len(ids) > size:
                     # Когда кол-во идентификаторов,
                     # которые указано получить, превышают лимит максимального
