@@ -1,5 +1,7 @@
 # coding: utf-8
+import datetime as dt
 import logging
+
 import yaml
 
 from tapioca_yandex_direct import YandexDirect, GetTokenYandexDirect
@@ -13,7 +15,11 @@ ACCESS_TOKEN = data_loaded["token"]
 CLIENT_ID = data_loaded["client_id"]
 
 api = YandexDirect(
-    access_token=ACCESS_TOKEN, retry_request_if_limit=False, is_sandbox=True
+    access_token=ACCESS_TOKEN,
+    retry_if_not_enough_units=False,
+    is_sandbox=True,
+    auto_request_generation=True,
+    receive_all_objects=True
 )
 
 
@@ -24,125 +30,52 @@ def test_get_campaigns():
             "params": {
                 "SelectionCriteria": {},
                 "FieldNames": ["Id", "Name", "State", "Status", "Type"],
-                "Page": {"Limit": 100},
+                "Page": {"Limit": 2},
             },
         }
     )
     print(r)
 
 
-def test_transform():
+def test_method_get_transform_result():
     r = api.campaigns().get(
         data={
             "method": "get",
             "params": {
                 "SelectionCriteria": {},
                 "FieldNames": ["Id"],
-                "Page": {"Limit": 100},
+                "Page": {"Limit": 3},
             },
         }
     )
     print(r().transform())
 
 
-def test_get_bids():
-    r = api.bids().post(
-        data={
-            "method": "get",
-            "params": {
-                "SelectionCriteria": {"CampaignIds": ["45575727"]},
-                "FieldNames": [
-                    "CampaignId",
-                    "AdGroupId",
-                    "KeywordId",
-                    "ServingStatus",
-                    "Bid",
-                    "ContextBid",
-                    "StrategyPriority",
-                    "CompetitorsBids",
-                    "SearchPrices",
-                    "ContextCoverage",
-                    "MinSearchPrice",
-                    "CurrentSearchPrice",
-                    "AuctionBids",
-                ],
-            },
+def test_method_add_transform_result():
+    body = {
+        "method": "add",
+        "params": {
+            "Campaigns": [
+                {
+                    "Name": "MyCampaignTest",
+                    "StartDate": str(dt.datetime.now().date()),
+                    "TextCampaign": {
+                        "BiddingStrategy": {
+                            "Search": {
+                                "BiddingStrategyType": "HIGHEST_POSITION"
+                            },
+                            "Network": {
+                                "BiddingStrategyType": "SERVING_OFF"
+                            }
+                        },
+                        "Settings": []
+                    }
+                }
+            ]
         }
-    )
-    print(r)
-
-
-def test_get_light_bids():
-    r = api.bids().post(
-        data={
-            "method": "get",
-            "params": {
-                "SelectionCriteria": {
-                    # "AdGroupIds": ["1234567"],
-                    "CampaignIds": [
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                        "45575727",
-                    ]
-                },
-                "FieldNames": [
-                    "CampaignId",
-                    "AdGroupId",
-                    "KeywordId",
-                    "Bid",
-                    "ContextBid",
-                    "ContextCoverage",
-                    "CurrentSearchPrice",
-                    "AuctionBids",
-                ],
-            },
-        }
-    )
-    print(r)
-
-
-def test_resume_campaigns():
-    r = api.campaigns().post(
-        data={"method": "resume", "params": {"SelectionCriteria": {"Ids": ["320389"]}}}
-    )
-    print(r)
-
-
-def test_get_keywords():
-    r = api.keywords().get(
-        data={
-            "method": "get",
-            "params": {
-                "SelectionCriteria": {"Ids": ["16837839710"]},
-                "FieldNames": ["Id", "Keyword", "State", "Status", "Bid", "ContextBid"],
-                # "Page": {"Limit": 1},
-            },
-        }
-    )
-    print(r)
-
-
-def test_keywordbids():
-    r = api.keywordbids().post(
-        data={
-            "method": "set",
-            "params": {
-                "KeywordBids": [{"KeywordId": 16837839710, "SearchBid": 0.33 * 1000000}]
-            },
-        }
-    )
-    print(r)
+    }
+    r = api.campaigns().post(data=body)
+    print(r().transform())
 
 
 def test_get_debugtoken():
