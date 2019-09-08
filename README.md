@@ -12,10 +12,9 @@ pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yandex-direct
 
 Примеры находятся в [Ipython Notebook](https://github.com/pavelmaksimov/tapioca-yandex-direct/blob/master/examples.ipynb)
 
+## [Справка](https://yandex.ru/dev/direct/) Api Яндекс Директ
+
 ## Документация
-
-###### Справка Api Яндекс Директ https://yandex.ru/dev/direct/
-
 ``` python
 from tapioca_yandex_direct import YandexDirect
 
