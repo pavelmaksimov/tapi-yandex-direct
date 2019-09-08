@@ -10,7 +10,7 @@ pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yandex-direct
 
 ## Примеры
 
-Примеры находятся тут
+Примеры находятся в [Ipython Notebook](https://github.com/pavelmaksimov/tapioca-yandex-direct/blob/master/examples.ipynb)
 
 ## Документация
 
@@ -118,9 +118,6 @@ print(result().transform())
 [{'Id': 338151, 'Name': 'Test API Sandbox campaign 1'},
  {'Id': 338152, 'Name': 'Test API Sandbox campaign 2'}]
 ```
-
-## Примеры
-Больше примеров есть в [Ipython Notebook](https://github.com/pavelmaksimov/tapioca-yandex-direct/blob/master/examples.ipynb)
 
 ## Фичи
 Открыть документация метода
