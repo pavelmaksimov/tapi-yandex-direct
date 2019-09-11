@@ -61,6 +61,7 @@ RESULT_DICTIONARY_KEYS_OF_API_METHODS = {
         "https://api.direct.yandex.com/json/v5/negativekeywordsharedsets": "NegativeKeywordSharedSets",
     }
 }
+URL_REPORTS = "https://api.direct.yandex.com/json/v5/reports"
 
 
 class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
@@ -105,7 +106,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         чтобы сделать несколько запросов.
         """
         cond = api_params.get("auto_request_generation", False)
-        if cond and kwargs["data"]["method"] == "get":
+        if cond and kwargs["data"].get("method") == "get":
             filters = kwargs["data"].get("params", {}).get("SelectionCriteria", {})
             ids_fields = [i for i in filters.keys() if i in MAX_COUNT_OBJECTS]
             if len(ids_fields) > 1:
@@ -159,6 +160,11 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             params["headers"].update({"Use-Operator-Units": use_operator_units})
 
         params["headers"].update({"Accept-Language": api_params.get("language", "ru")})
+        params["headers"]["processingMode"] = api_params.get("processing_mode", "auto")
+        params["headers"]["returnMoneyInMicros"] = str(api_params.get("return_money_in_micros", False))
+        params["headers"]["skipReportHeader"] = str(api_params.get("skip_report_header", True))
+        params["headers"]["skipColumnHeader"] = str(api_params.get("skip_column_header", True))
+        params["headers"]["skipReportSummary"] = str(api_params.get("skip_report_summary", True))
 
         return params
 
@@ -173,9 +179,21 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             return response.text
 
     def process_response(self, response, **request_kwargs):
+        if response.status_code == 502:
+            raise exceptions.YandexDirectServerError(
+                response,
+                "Время формирования отчета превысило серверное ограничение. "
+                "Пожалуйста, попробуйте изменить параметры запроса - "
+                "уменьшить период и количество запрашиваемых данных."
+            )
+
         data = super().process_response(response)
-        if data.get("error"):
+
+        if response.url.replace(self.SANDBOX_HOST, self.PRODUCTION_HOST) == URL_REPORTS:
+            pass
+        elif data.get("error") or response.status_code == 202:
             raise ResponseProcessException(ClientError, data)
+
         return data
 
     def wrapper_call_exception(
@@ -191,7 +209,9 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             else:
                 error_code = jdata.get("error").get("error_code", 0)
 
-                if error_code == 152:
+                if error_code == 202:
+                    pass
+                elif error_code == 152:
                     raise exceptions.YandexDirectLimitError(response)
                 elif error_code == 53:
                     raise exceptions.YandexDirectTokenError(response)
@@ -222,65 +242,77 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                 return True
             else:
                 logging.debug("Исчерпан лимит запросов")
+        elif error_code == 202:
+            sleep = response.headers.get("retryIn", 10)
+            logging.debug(f"Отчет готовится, проверка через {sleep} (в секундах)")
+            time.sleep(sleep)
+            return True
         return False
 
     def extra_request(
         self, api_params, current_request_kwargs, request_kwargs_list, response, current_result
     ):
-        limit = current_result.get("result", {}).get("LimitedBy", False)
-        if api_params.get("receive_all_objects") and limit:
-            # Дополнительный запрос, если не все данные получены.
-            request_kwargs = current_request_kwargs.copy()
-            request_kwargs["data"] = json.loads(request_kwargs["data"])
+        if response.url.replace(self.SANDBOX_HOST, self.PRODUCTION_HOST) != URL_REPORTS:
+            limit = current_result.get("result", {}).get("LimitedBy", False)
+            if api_params.get("receive_all_objects") and limit:
+                # Дополнительный запрос, если не все данные получены.
+                request_kwargs = current_request_kwargs.copy()
+                request_kwargs["data"] = json.loads(request_kwargs["data"])
 
-            if request_kwargs["data"]["params"].get("Page"):
-                request_kwargs["data"]["params"]["Page"]["Offset"] = limit
-            else:
-                request_kwargs["data"]["params"]["Page"] = {"Offset": limit}
+                if request_kwargs["data"]["params"].get("Page"):
+                    request_kwargs["data"]["params"]["Page"]["Offset"] = limit
+                else:
+                    request_kwargs["data"]["params"]["Page"] = {"Offset": limit}
 
-            request_kwargs["data"] = json.dumps(request_kwargs["data"])
-            request_kwargs_list.append(request_kwargs)
+                request_kwargs["data"] = json.dumps(request_kwargs["data"])
+                request_kwargs_list.append(request_kwargs)
 
         return request_kwargs_list
 
     def transform(self, results, request_kwargs, *args, **kwargs):
         """Преобразование данных"""
-        method = json.loads(request_kwargs["data"])["method"]
-        try:
-            key = RESULT_DICTIONARY_KEYS_OF_API_METHODS[method]
-        except KeyError:
-            raise KeyError(
-                "Для запроса с методом '{}' преобразование "
-                "данных не настроено".format(method)
-            )
+        url = request_kwargs['url'].replace(
+            self.SANDBOX_HOST, self.PRODUCTION_HOST
+        )
+        if url.replace(self.SANDBOX_HOST, self.PRODUCTION_HOST) == URL_REPORTS:
+            new_data = [i.split("\t") for i in results[0].split("\n")]
+            if new_data[-1] == [""]:
+                del new_data[-1]
+            return new_data
         else:
-            if method == "get":
-                try:
-                    url = request_kwargs['url'].replace(
-                        self.SANDBOX_HOST, self.PRODUCTION_HOST
-                    )
-                    key = key[url]
-                except KeyError:
-                    raise KeyError(
-                        'Для этого ресурса преобразование данных не настроено'
-                    )
-                else:
-                    new_data = []
-                    for r in results:
-                        data = r.get('result', {}).get(key, [])
-                        new_data += data
-                    return new_data
+            method = json.loads(request_kwargs["data"])["method"]
+            try:
+                key = RESULT_DICTIONARY_KEYS_OF_API_METHODS[method]
+            except KeyError:
+                raise KeyError(
+                    "Для запроса с методом '{}' преобразование "
+                    "данных не настроено".format(method)
+                )
             else:
-                if len(results) > 1:
-                    logging.warning(
-                        "При преобразовании данных было обнаружено "
-                        "несколько ответов. "
-                        "Такое поведение не предусмотрено. "
-                        "Был извлечен только первый ответ."
-                    )
-                if key == "result":
-                    return results[0]["result"]
-                return results[0]["result"][key]
+                if method == "get":
+                    try:
+                        key = key[url]
+                    except KeyError:
+                        raise KeyError(
+                            'Для этого ресурса преобразование данных не настроено'
+                        )
+                    else:
+                        new_data = []
+                        for r in results:
+                            data = r.get('result', {}).get(key, [])
+                            new_data += data
+                        return new_data
+                else:
+                    if len(results) > 1:
+                        logging.warning(
+                            "При преобразовании данных было обнаружено "
+                            "несколько ответов. "
+                            "Такое поведение не предусмотрено. "
+                            "Был извлечен только первый ответ."
+                        )
+                    if key == "result":
+                        return results[0]["result"]
+                    return results[0]["result"][key]
 
 
 class GetTokenYandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):

@@ -81,3 +81,25 @@ def test_method_add_transform_result():
 def test_get_debugtoken():
     api = GetTokenYandexDirect()
     api.debugtoken(client_id=CLIENT_ID).open_in_browser()
+
+
+def test_get_report():
+    r = api.reports().get(
+        data={
+            "params": {
+                "SelectionCriteria": {},
+                "FieldNames": ["Date", "CampaignId", "Clicks", "Cost"],
+                "OrderBy": [{
+                    "Field": "Date"
+                }],
+                "ReportName": "Actual Data",
+                "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
+                "DateRangeType": "AUTO",
+                "Format": "TSV",
+                "IncludeVAT": "YES",
+                "IncludeDiscount": "YES"
+            }
+        }
+    )
+    print(r)
+    print(r().transform())

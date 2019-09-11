@@ -3,14 +3,18 @@ import logging
 
 
 class YandexDirectApiError(Exception):
-    def __init__(self, response, *args, **kwargs):
+    def __init__(self, response, message=None, *args, **kwargs):
         self.response = response
+        self.message = message
 
     def __str__(self):
         logging.info("HEADERS = " + str(self.response.headers))
         logging.info("URL = " + self.response.url)
-        return "{} {} {}".format(
-            self.response.status_code, self.response.reason, self.response.text
+        return "{}{} {} {}".format(
+            self.message + " " or "",
+            self.response.status_code,
+            self.response.reason,
+            self.response.text
         )
 
 

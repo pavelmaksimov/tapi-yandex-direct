@@ -93,6 +93,10 @@ RESOURCE_MAPPING_V5 = {
         "resource": "json/v5/negativekeywordsharedsets",
         "docs": "https://yandex.ru/dev/direct/doc/ref-v5/negativekeywordsharedsets/negativekeywordsharedsets-docpage/",
     },
+    "reports": {
+        "resource": "json/v5/reports",
+        "docs": "https://yandex.ru/dev/direct/doc/reports/reports-docpage/",
+    },
 }
 
 RESOURCE_MAPPING_OAUTH = {
