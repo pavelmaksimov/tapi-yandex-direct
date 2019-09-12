@@ -91,6 +91,10 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             Если в запросе не будут получены все объекты,
             то будут сделаны дополнительные запросы.
         :param is_sandbox: bool : False : включить песочницу
+        :param wait_report: bool : True : ждать готовности отчета
+        :param retry_if_exceeded_queue_size_limit: bool : True : ожидать и повторять запрос,
+            если закончилась квота запросов к апи.
+        :param retries_if_server_error: int : 5 : число повторов при серверной ошибке
         """
         super().__init__(*args, **kwargs)
 
@@ -161,10 +165,10 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
         params["headers"].update({"Accept-Language": api_params.get("language", "ru")})
         params["headers"]["processingMode"] = api_params.get("processing_mode", "auto")
-        params["headers"]["returnMoneyInMicros"] = str(api_params.get("return_money_in_micros", False))
-        params["headers"]["skipReportHeader"] = str(api_params.get("skip_report_header", True))
-        params["headers"]["skipColumnHeader"] = str(api_params.get("skip_column_header", True))
-        params["headers"]["skipReportSummary"] = str(api_params.get("skip_report_summary", True))
+        params["headers"]["returnMoneyInMicros"] = str(api_params.get("return_money_in_micros", False)).lower()
+        params["headers"]["skipReportHeader"] = str(api_params.get("skip_report_header", True)).lower()
+        params["headers"]["skipColumnHeader"] = str(api_params.get("skip_column_header", False)).lower()
+        params["headers"]["skipReportSummary"] = str(api_params.get("skip_report_summary", True)).lower()
 
         return params
 
@@ -186,32 +190,33 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                 "Пожалуйста, попробуйте изменить параметры запроса - "
                 "уменьшить период и количество запрашиваемых данных."
             )
+        # При ошибке 500 и в других в ответах может быть json с ошибками.
+        data = self.response_to_native(response)
 
-        data = super().process_response(response)
-
-        if response.url.replace(self.SANDBOX_HOST, self.PRODUCTION_HOST) == URL_REPORTS:
-            pass
-        elif data.get("error") or response.status_code == 202:
+        if isinstance(data, dict):
+            if data.get("error"):
+                raise ResponseProcessException(ClientError, data)
+        elif response.status_code in (201, 202):
             raise ResponseProcessException(ClientError, data)
+        else:
+            data = super().process_response(response)
 
         return data
 
     def wrapper_call_exception(
         self, response, tapioca_exception, api_params, *args, **kwargs
     ):
-        if 500 <= response.status_code < 600:
-            raise exceptions.YandexDirectServerError(response)
+        if response.status_code in (201, 202):
+            pass
         else:
             try:
                 jdata = response.json()
             except json.JSONDecodeError:
                 raise exceptions.YandexDirectApiError(response)
             else:
-                error_code = jdata.get("error").get("error_code", 0)
+                error_code = int(jdata.get("error").get("error_code", 0))
 
-                if error_code == 202:
-                    pass
-                elif error_code == 152:
+                if error_code == 152:
                     raise exceptions.YandexDirectLimitError(response)
                 elif error_code == 53:
                     raise exceptions.YandexDirectTokenError(response)
@@ -225,7 +230,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             except json.JSONDecodeError:
                 return response.text
 
-    def retry_request(self, response, tapioca_exception, api_params, *args, **kwargs):
+    def retry_request(self, response, tapioca_exception, api_params, count_request_error, *args, **kwargs):
         """
         Условия повторения запроса.
 
@@ -233,20 +238,39 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         status_code = tapioca_exception.client().status_code
         response_data = tapioca_exception.client().data
         """
+        status_code = tapioca_exception.client().status_code
         response_data = tapioca_exception.client().data
-        error_code = (response_data or {}).get("error", {}).get("error_code", 0)
+        error_code = int((response_data or {}).get("error", {}).get("error_code", 0))
+
+        if status_code in (201, 202):
+            logging.info("Отчет не готов")
+            if api_params.get("wait_report", True):
+                sleep = int(response.headers.get("retryIn", 10))
+                logging.warning("Повтор через {} сек.".format(sleep))
+                time.sleep(sleep)
+                return True
+
         if error_code == 152:
             if api_params.get("retry_if_not_enough_units", False):
-                logging.debug("Исчерпан лимит, повтор через 1 минуту")
-                time.sleep(60)
+                logging.warning("Нехватает баллов, повтор через 5 минут")
+                time.sleep(60 * 5)
                 return True
             else:
-                logging.debug("Исчерпан лимит запросов")
-        elif error_code == 202:
-            sleep = response.headers.get("retryIn", 10)
-            logging.debug(f"Отчет готовится, проверка через {sleep} (в секундах)")
-            time.sleep(sleep)
+                logging.error("Нехватает баллов для запроса")
+        elif error_code == 506 and api_params.get("retry_if_exceeded_limit", True):
+            logging.warning("Превышено количество запросов к API, повтор через 10 секунд")
+            time.sleep(10)
             return True
+        elif error_code == 9000 and api_params.get("retry_if_exceeded_limit", True):
+            logging.warning('Создано макс. кол-во отчетов. Повторный запрос через 10 секунд')
+            time.sleep(10)
+            return True
+        elif error_code in (52, 1000, 1001, 1002) or status_code in (500, 400):
+            if count_request_error < api_params.get("retries_if_server_error", 5):
+                logging.warning('Серверная ошибка. Повторный запрос через 1 секунду')
+                time.sleep(1)
+                return True
+
         return False
 
     def extra_request(
@@ -275,9 +299,11 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             self.SANDBOX_HOST, self.PRODUCTION_HOST
         )
         if url.replace(self.SANDBOX_HOST, self.PRODUCTION_HOST) == URL_REPORTS:
-            new_data = [i.split("\t") for i in results[0].split("\n")]
-            if new_data[-1] == [""]:
-                del new_data[-1]
+            data = results or ""
+            data = data[0] if data else ""
+            new_data = [i.split("\t") for i in data.split("\n")]
+            # Удаление последней пустой строки.
+            new_data = new_data[:-1] if new_data[-1] == [""] else new_data
             return new_data
         else:
             method = json.loads(request_kwargs["data"])["method"]

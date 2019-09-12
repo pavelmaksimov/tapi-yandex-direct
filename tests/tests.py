@@ -16,10 +16,20 @@ CLIENT_ID = data_loaded["client_id"]
 
 api = YandexDirect(
     access_token=ACCESS_TOKEN,
-    retry_if_not_enough_units=False,
     is_sandbox=True,
     auto_request_generation=True,
-    receive_all_objects=True
+    receive_all_objects=True,
+    retry_if_not_enough_units=False,
+    retry_if_exceeded_limit=False,
+    retries_if_server_error=5,
+    language='ru',
+    # Параметры для метода Reports
+    processing_mode='offline',
+    wait_report=False,
+    return_money_in_micros=True,
+    skip_report_header=True,
+    skip_column_header=False,
+    skip_report_summary=True,
 )
 
 
@@ -92,9 +102,9 @@ def test_get_report():
                 "OrderBy": [{
                     "Field": "Date"
                 }],
-                "ReportName": "Actual Data",
+                "ReportName": "Actual Data 9",
                 "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
-                "DateRangeType": "AUTO",
+                "DateRangeType": "LAST_WEEK",
                 "Format": "TSV",
                 "IncludeVAT": "YES",
                 "IncludeDiscount": "YES"
@@ -103,3 +113,26 @@ def test_get_report():
     )
     print(r)
     print(r().transform())
+
+
+def test_get_report2():
+    for i in range(7):
+        r = api.reports().get(
+            data={
+                "params": {
+                    "SelectionCriteria": {},
+                    "FieldNames": ["Date", "CampaignId", "Clicks", "Cost"],
+                    "OrderBy": [{
+                        "Field": "Date"
+                    }],
+                    "ReportName": "Actual Data f " + str(i),
+                    "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
+                    "DateRangeType": "LAST_WEEK",
+                    "Format": "TSV",
+                    "IncludeVAT": "YES",
+                    "IncludeDiscount": "YES"
+                }
+            }
+        )
+        print(r().response.status_code)
+        print(r().transform())
