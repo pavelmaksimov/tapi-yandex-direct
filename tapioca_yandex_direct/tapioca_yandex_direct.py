@@ -230,7 +230,14 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             except json.JSONDecodeError:
                 return response.text
 
-    def retry_request(self, response, tapioca_exception, api_params, count_request_error, *args, **kwargs):
+    def retry_request(
+        self,
+        response,
+        tapioca_exception,
+        api_params,
+        count_request_error,
+        *args, **kwargs
+    ):
         """
         Условия повторения запроса.
 
@@ -274,9 +281,17 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         return False
 
     def extra_request(
-        self, api_params, current_request_kwargs, request_kwargs_list, response, current_result
+        self,
+        api_params,
+        current_request_kwargs,
+        request_kwargs_list,
+        response,
+        current_result
     ):
-        if response.url.replace(self.SANDBOX_HOST, self.PRODUCTION_HOST) != URL_REPORTS:
+        url = response.url.replace(
+            self.SANDBOX_HOST, self.PRODUCTION_HOST
+        )
+        if url != URL_REPORTS:
             limit = current_result.get("result", {}).get("LimitedBy", False)
             if api_params.get("receive_all_objects") and limit:
                 # Дополнительный запрос, если не все данные получены.
@@ -293,14 +308,22 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
 
         return request_kwargs_list
 
+    def transform_results(self, results, requests_kwargs, responses, api_params):
+        url = requests_kwargs[0]['url'].replace(
+            self.SANDBOX_HOST, self.PRODUCTION_HOST
+        )
+        if url == URL_REPORTS:
+            return (results or [False])[0]
+        else:
+            return results
+
     def transform(self, results, request_kwargs, *args, **kwargs):
         """Преобразование данных"""
         url = request_kwargs['url'].replace(
             self.SANDBOX_HOST, self.PRODUCTION_HOST
         )
-        if url.replace(self.SANDBOX_HOST, self.PRODUCTION_HOST) == URL_REPORTS:
+        if url == URL_REPORTS:
             data = results or ""
-            data = data[0] if data else ""
             new_data = [i.split("\t") for i in data.split("\n")]
             # Удаление последней пустой строки.
             new_data = new_data[:-1] if new_data[-1] == [""] else new_data
