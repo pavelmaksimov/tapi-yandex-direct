@@ -20,8 +20,9 @@ from tapioca_yandex_direct import YandexDirect
 
 ACCESS_TOKEN = {ваш токен доступа}
 
+# Обязательные параметры помечены звездочкой.
 api = YandexDirect(
-    # Токен доступа.
+    # *Токен доступа.
     access_token=ACCESS_TOKEN, 
     # Когда False не будет повторять запрос, если закончаться баллы.
     # По умолчанию False
@@ -152,30 +153,6 @@ print(result().data)
 # В списке может находится несколько ответов.
 ```
 
-```python
-body = {
-    "params": {
-        "SelectionCriteria": {},
-        "FieldNames": ["Date", "CampaignId", "Clicks", "Cost"],
-        "OrderBy": [{
-            "Field": "Date"
-        }],
-        "ReportName": "Actual Data",
-        "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
-        "DateRangeType": "LAST_WEEK",
-        "Format": "TSV",
-        "IncludeVAT": "YES",
-        "IncludeDiscount": "YES"
-    }
-}
-result = api.reports().post(data=body)
-print(result().data)
-[   
-    'Date\tCampaignId\tClicks\tCost\n'
-    '2019-09-02\t338151\t12578\t9210750000\n'
-]
-```
-
 ##### Преобразование ответа
 
 Для ответов API Я.Директ есть функция преобразования **transform**.
@@ -183,14 +160,7 @@ print(result().data)
 если запросов было несколько.
 Работает только запросов с методом "get" и ресурса reports.
 ```python
-body = {
-    "method": "get",
-    "params": {
-        "SelectionCriteria": {},
-        "FieldNames": ["Id","Name"],
-    },
-}
-result = api.campaigns().post(data=body)
+
 print(result().transform())
 [{'Id': 338151, 'Name': 'Test API Sandbox campaign 1'},
  {'Id': 338152, 'Name': 'Test API Sandbox campaign 2'}]
@@ -203,12 +173,13 @@ from tapioca_yandex_direct import YandexDirect
 
 ACCESS_TOKEN = {ваш токен доступа}
 
+# Обязательные параметры помечены звездочкой.
 api = YandexDirect(
-    # Токен доступа.
+    # *Токен доступа.
     access_token=ACCESS_TOKEN, 
     # True включить песочницу.
     # По умолчанию False
-    is_sandbox=True,
+    is_sandbox=False,
     # Если вы делаете запросы из под агентского аккаунта, 
     # вам нужно указать логин аккаунта для которого будете делать запросы.
     #login="{логин аккаунта Я.Директ}"
