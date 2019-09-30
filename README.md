@@ -15,7 +15,7 @@ pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yandex-direct
 ## [Справка](https://yandex.ru/dev/direct/) Api Яндекс Директ
 
 ## Документация по API сравочника Яндекс.Директ
-``` python
+```python
 from tapioca_yandex_direct import YandexDirect
 
 ACCESS_TOKEN = {ваш токен доступа}
@@ -56,7 +56,7 @@ api = YandexDirect(
 
 Генерация класса **YandexDirect** происходит динамически, 
 поэтому узнать о добавленных в схему ресурсах, можно так.
-``` python
+```python
 print(dir(api))
 ```
 
@@ -135,9 +135,8 @@ print(result().data)
 Для ответов API Я.Директ есть функция преобразования **transform**.
 Она извлечет данные из словаря и соединит все ответы в один список, 
 если запросов было несколько.
-Работает только запросов с методом "get" и ресурса reports.
+Работает только запросов с методом "get".
 ```python
-
 print(result().transform())
 [{'Id': 338151, 'Name': 'Test API Sandbox campaign 1'},
  {'Id': 338152, 'Name': 'Test API Sandbox campaign 2'}]
