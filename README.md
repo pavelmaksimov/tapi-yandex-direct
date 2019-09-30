@@ -206,8 +206,8 @@ body = {
 }
 result = api.reports().post(data=body)
 print(result().data)
-Date\tCampaignId\tClicks\tCost\n
-2019-09-02\t338151\t12578\t9210750000\n
+'Date\tCampaignId\tClicks\tCost\n'
+'2019-09-02\t338151\t12578\t9210750000\n'
 
 # Преобразование.
 print(result().transform())
