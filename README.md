@@ -1,4 +1,4 @@
-# Python библиотека для запросов к [API Яндекс Директ](https://yandex.ru/dev/direct/)
+# Python библиотека [API Яндекс Директ](https://yandex.ru/dev/direct/)
 
 Написано на версии python 3.5
 
@@ -12,9 +12,9 @@ pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yandex-direct
 
 Примеры находятся в [Ipython Notebook](https://github.com/pavelmaksimov/tapioca-yandex-direct/blob/master/examples.ipynb)
 
-## [Справка](https://yandex.ru/dev/direct/) Api Яндекс Директ
+[Справка](https://yandex.ru/dev/direct/) Api Яндекс Директ
 
-## Документация по API сравочника Яндекс.Директ
+## Документация API сравочника Яндекс.Директ
 ```python
 from tapioca_yandex_direct import YandexDirect
 
@@ -60,7 +60,6 @@ api = YandexDirect(
 print(dir(api))
 ```
 
-## Запрос к ресурсу API. 
 Запросы к API выполняются по протоколу HTTPS методом POST.
 Входные структуры данных передаются в теле запроса.
 
@@ -143,7 +142,7 @@ print(result().transform())
 ```
 
 
-## Документация по API отчетов Яндекс.Директ
+## Документация API отчетов Яндекс.Директ
 ```python
 from tapioca_yandex_direct import YandexDirect
 
