@@ -190,6 +190,12 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                 "Пожалуйста, попробуйте изменить параметры запроса - "
                 "уменьшить период и количество запрашиваемых данных."
             )
+        elif response.status_code == 405:
+            raise exceptions.YandexDirectServerError(
+                response,
+                "Данный ресурс не обрабатывает HTTP метод {}\n"
+                    .format(response.request.method)
+            )
         # При ошибке 500 и в других в ответах может быть json с ошибками.
         data = self.response_to_native(response)
 
