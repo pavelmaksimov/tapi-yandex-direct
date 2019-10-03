@@ -226,6 +226,15 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                     raise exceptions.YandexDirectLimitError(response)
                 elif error_code == 53:
                     raise exceptions.YandexDirectTokenError(response)
+                elif (
+                    error_code == 9000
+                    and api_params.get("retry_if_exceeded_limit", False) is False
+                ):
+                    raise exceptions.YandexDirectApiError(
+                        response,
+                        "В данный момент на сервере готовятся максимальное "
+                        "кол-во отчетов. Повторите запрос позже."
+                    )
                 else:
                     raise exceptions.YandexDirectClientError(response)
 
@@ -315,10 +324,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         return request_kwargs_list
 
     def transform_results(self, results, requests_kwargs, responses, api_params):
-        url = requests_kwargs[0]['url'].replace(
-            self.SANDBOX_HOST, self.PRODUCTION_HOST
-        )
-        if url == URL_REPORTS:
+        if responses[0].request.path_url == URL_PATH_REPORTS:
             return (results or [False])[0]
         else:
             return results
