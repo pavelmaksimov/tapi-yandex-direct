@@ -278,7 +278,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             logging.warning('Создано макс. кол-во отчетов. Повторный запрос через 10 секунд')
             time.sleep(10)
             return True
-        elif error_code in (52, 1000, 1001, 1002) or status_code in (500, 400):
+        elif error_code in (52, 1000, 1001, 1002) or status_code == 500:
             if count_request_error < api_params.get("retries_if_server_error", 5):
                 logging.warning('Серверная ошибка. Повторный запрос через 1 секунду')
                 time.sleep(1)
