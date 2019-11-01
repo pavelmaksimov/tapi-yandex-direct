@@ -283,6 +283,10 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             logging.warning("Превышено количество запросов к API, повтор через 10 секунд")
             time.sleep(10)
             return True
+        elif error_code == 56 and api_params.get("retry_if_exceeded_limit", True):
+            logging.warning('Превышен лимит запросов метода. Повторный запрос через 10 секунд')
+            time.sleep(10)
+            return True
         elif error_code == 9000 and api_params.get("retry_if_exceeded_limit", True):
             logging.warning('Создано макс. кол-во отчетов. Повторный запрос через 10 секунд')
             time.sleep(10)
