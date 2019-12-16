@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import json
 
 
 class YandexDirectApiError(Exception):
@@ -14,7 +15,7 @@ class YandexDirectApiError(Exception):
             self.message + " " or "",
             self.response.status_code,
             self.response.reason,
-            self.response.text
+            self.response.text,
         )
 
 
@@ -25,7 +26,7 @@ class YandexDirectServerError(YandexDirectApiError):
 class YandexDirectClientError(YandexDirectApiError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.jdata = self.response.json()
+        self.jdata = json.loads(self.response.content, encoding="utf8")
         error_data = self.jdata.get("error", {})
         self.code = error_data.get("error_code")
         self.request_id = error_data.get("request_id")
@@ -33,7 +34,8 @@ class YandexDirectClientError(YandexDirectApiError):
         self.error_detail = error_data.get("error_detail")
 
     def __str__(self):
-        return "request_id={}, code={}, error_string={}, error_detail={}".format(
+        str = "\n\trequest_id={},\n\tcode={},\n\terror_string={},\n\terror_detail={}"
+        return str.format(
             self.request_id, self.code, self.error_string, self.error_detail
         )
 

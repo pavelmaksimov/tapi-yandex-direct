@@ -175,7 +175,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     def get_error_message(self, data, response=None):
         try:
             if not data and response.content.strip():
-                data = json.loads(response.content.decode("utf-8"))
+                data = json.loads(response.content, encoding="utf8")
 
             if data:
                 return data.get("error", None)
@@ -216,7 +216,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             pass
         else:
             try:
-                jdata = response.json()
+                jdata = json.loads(response.content, encoding="utf8")
             except json.JSONDecodeError:
                 raise exceptions.YandexDirectApiError(response)
             else:
@@ -241,7 +241,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     def response_to_native(self, response):
         if response.content.strip():
             try:
-                return response.json()
+                return json.loads(response.content, encoding="utf8")
             except json.JSONDecodeError:
                 return response.text
 
