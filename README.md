@@ -4,19 +4,18 @@
 
 ## Установка
 ```
-pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-wrapper#egg=tapioca-wrapper-2019.9.30
-pip install --upgrade git+https://github.com/pavelmaksimov/tapioca-yandex-direct.git
+pip install tapi-yandex-direct
 ```
 
 ## Примеры
 
-Примеры находятся в [Ipython Notebook](https://github.com/pavelmaksimov/tapioca-yandex-direct/blob/master/examples.ipynb)
+Примеры находятся в [Ipython Notebook](https://github.com/pavelmaksimov/tapi-yandex-direct/blob/master/examples.ipynb)
 
 [Справка](https://yandex.ru/dev/direct/) Api Яндекс Директ
 
 ## Документация API сравочника Яндекс.Директ
 ```python
-from tapioca_yandex_direct import YandexDirect
+from tapi_yandex_direct import YandexDirect
 
 ACCESS_TOKEN = {ваш токен доступа}
 
@@ -101,7 +100,7 @@ result = api.campaigns().post(data=body)
 ```
 
 #### Формат возвращаемых данных.
-Данные возвращаются в формате объекта **Tapioca**.
+Данные возвращаются в формате объекта **Tapi**.
 
 ```python
 print(result)
@@ -144,7 +143,7 @@ print(result().transform())
 
 ## Документация API отчетов Яндекс.Директ
 ```python
-from tapioca_yandex_direct import YandexDirect
+from tapi_yandex_direct import YandexDirect
 
 ACCESS_TOKEN = {ваш токен доступа}
 
@@ -230,7 +229,7 @@ api.campaigns().open_in_browser()
 
 ## Зависимости
 - requests 
-- [tapioca_wrapper](https://github.com/pavelmaksimov/tapioca-wrapper) 
+- [tapi_wrapper](https://github.com/pavelmaksimov/tapi-wrapper) 
 
 ## Автор
 Павел Максимов
@@ -241,6 +240,3 @@ api.campaigns().open_in_browser()
 [Facebook](https://www.facebook.com/pavel.maksimow)
 
 Удачи тебе, друг! Поставь звездочку ;)
-
-## Другое
-- Как работает обертка [Tapioca](http://tapioca-wrapper.readthedocs.org/en/stable/quickstart.html)

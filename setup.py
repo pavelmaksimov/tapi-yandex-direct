@@ -9,16 +9,11 @@ except ImportError:
 
 import os
 import re
-import sys
 
-try:
-    import pypandoc
+with open("README.md", "r", encoding="utf8") as fh:
+    readme = fh.read()
 
-    readme = pypandoc.convert("README.md", "rst")
-except (IOError, ImportError):
-    readme = ""
-
-package = "tapioca_yandex_direct"
+package = "tapi_yandex_direct"
 
 
 def get_version(package):
@@ -31,29 +26,20 @@ def get_version(package):
     )
 
 
-# python setup.py register
-if sys.argv[-1] == "publish":
-    os.system("python setup.py sdist upload")
-    args = {"version": get_version(package)}
-    print("You probably want to also tag the version now:")
-    print("  git tag -a %(version)s -m 'version %(version)s'" % args)
-    print("  git push --tags")
-    sys.exit()
-
 setup(
-    name="tapioca-yandex-direct",
+    name="tapi-yandex-direct",
     version=get_version(package),
-    description="Yandex Direct API wrapper using tapioca",
+    description="Python библиотека для API Яндекс Директ",
     long_description=readme,
+    long_description_content_type="text/markdown",
     author="Pavel Maksimov",
     author_email="vur21@ya.ru",
-    url="https://github.com/pavelmaksimov/tapioca-yadirect",
-    packages=["tapioca_yandex_direct"],
-    package_dir={"tapioca_yandex_direct": "tapioca_yandex_direct"},
+    url="https://github.com/pavelmaksimov/tapi-yandex-direct",
+    packages=[package],
     include_package_data=True,
-    install_requires=["requests-oauthlib>=0.4.2"],
-    license="BSD",
+    install_requires=["requests-oauthlib>=0.4.2", "tapi-wrapper==2019.12.10"],
+    license="MIT",
     zip_safe=False,
-    keywords="tapioca-yandex-direct",
+    keywords="tapi,wrapper,yandex,metrika,api,direct,яндекс,директ,апи",
     test_suite="tests",
 )

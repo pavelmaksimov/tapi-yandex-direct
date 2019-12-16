@@ -4,7 +4,7 @@ import logging
 
 import yaml
 
-from tapioca_yandex_direct import YandexDirect, GetTokenYandexDirect
+from tapi_yandex_direct import YandexDirect, GetTokenYandexDirect
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -53,7 +53,7 @@ def test_method_get_transform_result():
             "method": "get",
             "params": {
                 "SelectionCriteria": {},
-                "FieldNames": ["Id"],
+                "FieldNames": ["Id", "Name"],
                 "Page": {"Limit": 3},
             },
         }
@@ -102,16 +102,16 @@ def test_get_report():
                 "OrderBy": [{
                     "Field": "Date"
                 }],
-                "ReportName": "Actual Data 9",
+                "ReportName": "Actual Data1111",
                 "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
-                "DateRangeType": "LAST_WEEK",
+                "DateRangeType": "ALL_DATA",
                 "Format": "TSV",
                 "IncludeVAT": "YES",
                 "IncludeDiscount": "YES"
             }
         }
     )
-    print(r)
+    print(r().data)
     print(r().transform())
 
 
@@ -125,7 +125,7 @@ def test_get_report2():
                     "OrderBy": [{
                         "Field": "Date"
                     }],
-                    "ReportName": "Actual Data f " + str(i),
+                    "ReportName": "Actual Data12 f 1" + str(i),
                     "ReportType": "CAMPAIGN_PERFORMANCE_REPORT",
                     "DateRangeType": "LAST_WEEK",
                     "Format": "TSV",

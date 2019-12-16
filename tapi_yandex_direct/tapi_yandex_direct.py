@@ -3,10 +3,10 @@ import json
 import logging
 import time
 
-from tapioca import TapiocaAdapter, generate_wrapper_from_adapter, JSONAdapterMixin
-from tapioca.exceptions import ResponseProcessException, ClientError
+from tapi import TapiAdapter, generate_wrapper_from_adapter, JSONAdapterMixin
+from tapi.exceptions import ResponseProcessException, ClientError
 
-from tapioca_yandex_direct import exceptions
+from tapi_yandex_direct import exceptions
 from .resource_mapping import RESOURCE_MAPPING_V5, RESOURCE_MAPPING_OAUTH
 
 # Максимальное кол-во объектов в одном запросе.
@@ -64,7 +64,7 @@ RESULT_DICTIONARY_KEYS_OF_API_METHODS = {
 URL_PATH_REPORTS = "/json/v5/reports"
 
 
-class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
+class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
     api_root = "https://{}/"
 
     PRODUCTION_HOST = "api.direct.yandex.com"
@@ -210,7 +210,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         return data
 
     def wrapper_call_exception(
-        self, response, tapioca_exception, api_params, *args, **kwargs
+        self, response, tapi_exception, api_params, *args, **kwargs
     ):
         if response.status_code in (201, 202):
             pass
@@ -248,7 +248,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
     def retry_request(
         self,
         response,
-        tapioca_exception,
+        tapi_exception,
         api_params,
         count_request_error,
         *args, **kwargs
@@ -256,12 +256,12 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         """
         Условия повторения запроса.
 
-        response = tapioca_exception.client().response
-        status_code = tapioca_exception.client().status_code
-        response_data = tapioca_exception.client().data
+        response = tapi_exception.client().response
+        status_code = tapi_exception.client().status_code
+        response_data = tapi_exception.client().data
         """
-        status_code = tapioca_exception.client().status_code
-        response_data = tapioca_exception.client().data
+        status_code = tapi_exception.client().status_code
+        response_data = tapi_exception.client().data
         error_code = int((response_data or {}).get("error", {}).get("error_code", 0))
 
         if status_code in (201, 202):
@@ -374,7 +374,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
                     return results[0]["result"][key]
 
 
-class GetTokenYandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
+class GetTokenYandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
     resource_mapping = RESOURCE_MAPPING_OAUTH
 
     def get_api_root(self, api_params):
