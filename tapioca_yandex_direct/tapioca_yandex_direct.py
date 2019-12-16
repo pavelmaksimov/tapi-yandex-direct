@@ -39,29 +39,29 @@ RESULT_DICTIONARY_KEYS_OF_API_METHODS = {
     "check": "result",
     "HasSearchVolumeResults": "HasSearchVolumeResults",
     "get": {
-        "https://api.direct.yandex.com/json/v5/campaigns": "Campaigns",
-        "https://api.direct.yandex.com/json/v5/adgroups": "AdGroups",
-        "https://api.direct.yandex.com/json/v5/ads": "Ads",
-        "https://api.direct.yandex.com/json/v5/audiencetargets": "AudienceTargets",
-        "https://api.direct.yandex.com/json/v5/creatives": "Creatives",
-        "https://api.direct.yandex.com/json/v5/adimages": "AdImages",
-        "https://api.direct.yandex.com/json/v5/vcards": "VCards",
-        "https://api.direct.yandex.com/json/v5/sitelinks": "SitelinksSets",
-        "https://api.direct.yandex.com/json/v5/adextensions": "AdExtensions",
-        "https://api.direct.yandex.com/json/v5/keywords": "Keywords",
-        "https://api.direct.yandex.com/json/v5/retargetinglists": "RetargetingLists",
-        "https://api.direct.yandex.com/json/v5/bids": "Bids",
-        "https://api.direct.yandex.com/json/v5/keywordbids": "KeywordBids",
-        "https://api.direct.yandex.com/json/v5/bidmodifiers": "BidModifiers",
-        "https://api.direct.yandex.com/json/v5/agencyclients": "Clients",
-        "https://api.direct.yandex.com/json/v5/clients": "Clients",
-        "https://api.direct.yandex.com/json/v5/leads": "Leads",
-        "https://api.direct.yandex.com/json/v5/dynamictextadtargets": "Webpages",
-        "https://api.direct.yandex.com/json/v5/turbopages": "TurboPages",
-        "https://api.direct.yandex.com/json/v5/negativekeywordsharedsets": "NegativeKeywordSharedSets",
+        "/json/v5/campaigns": "Campaigns",
+        "/json/v5/adgroups": "AdGroups",
+        "/json/v5/ads": "Ads",
+        "/json/v5/audiencetargets": "AudienceTargets",
+        "/json/v5/creatives": "Creatives",
+        "/json/v5/adimages": "AdImages",
+        "/json/v5/vcards": "VCards",
+        "/json/v5/sitelinks": "SitelinksSets",
+        "/json/v5/adextensions": "AdExtensions",
+        "/json/v5/keywords": "Keywords",
+        "/json/v5/retargetinglists": "RetargetingLists",
+        "/json/v5/bids": "Bids",
+        "/json/v5/keywordbids": "KeywordBids",
+        "/json/v5/bidmodifiers": "BidModifiers",
+        "/json/v5/agencyclients": "Clients",
+        "/json/v5/clients": "Clients",
+        "/json/v5/leads": "Leads",
+        "/json/v5/dynamictextadtargets": "Webpages",
+        "/json/v5/turbopages": "TurboPages",
+        "/json/v5/negativekeywordsharedsets": "NegativeKeywordSharedSets",
     }
 }
-URL_REPORTS = "https://api.direct.yandex.com/json/v5/reports"
+URL_PATH_REPORTS = "/json/v5/reports"
 
 
 class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
@@ -307,10 +307,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         response,
         current_result
     ):
-        url = response.url.replace(
-            self.SANDBOX_HOST, self.PRODUCTION_HOST
-        )
-        if url != URL_REPORTS:
+        if response.request.path_url != URL_PATH_REPORTS:
             limit = current_result.get("result", {}).get("LimitedBy", False)
             if api_params.get("receive_all_objects") and limit:
                 # Дополнительный запрос, если не все данные получены.
@@ -333,12 +330,9 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
         else:
             return results
 
-    def transform(self, results, request_kwargs, *args, **kwargs):
+    def transform(self, results, request_kwargs, response, api_params, *args, **kwargs):
         """Преобразование данных"""
-        url = request_kwargs['url'].replace(
-            self.SANDBOX_HOST, self.PRODUCTION_HOST
-        )
-        if url == URL_REPORTS:
+        if response.request.path_url == URL_PATH_REPORTS:
             data = results or ""
             new_data = [i.split("\t") for i in data.split("\n")]
             # Удаление последней пустой строки.
@@ -356,7 +350,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiocaAdapter):
             else:
                 if method == "get":
                     try:
-                        key = key[url]
+                        key = key[response.request.path_url]
                     except KeyError:
                         raise KeyError(
                             'Для этого ресурса преобразование данных не настроено'
