@@ -241,7 +241,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
     def response_to_native(self, response):
         if response.content.strip():
             try:
-                return json.loads(response.content, encoding="utf8")
+                return json.loads(response.content)
             except json.JSONDecodeError:
                 return response.text
 
