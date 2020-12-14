@@ -3,6 +3,7 @@ import json
 import logging
 import time
 
+import simplejson
 from tapi import TapiAdapter, generate_wrapper_from_adapter, JSONAdapterMixin
 from tapi.exceptions import ResponseProcessException, ClientError
 
@@ -179,7 +180,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
 
             if data:
                 return data.get("error", None)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, simplejson.JSONDecodeError):
             return response.text
 
     def process_response(self, response, **request_kwargs):
@@ -217,7 +218,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
         else:
             try:
                 jdata = json.loads(response.content.decode("utf-8"))
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, simplejson.JSONDecodeError):
                 raise exceptions.YandexDirectApiError(response)
             else:
                 error_code = int(jdata.get("error").get("error_code", 0))
@@ -242,7 +243,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
         if response.content.strip():
             try:
                 return json.loads(response.content.decode("utf-8"))
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, simplejson.JSONDecodeError):
                 return response.text
 
     def retry_request(
