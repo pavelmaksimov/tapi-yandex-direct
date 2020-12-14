@@ -26,7 +26,7 @@ class YandexDirectServerError(YandexDirectApiError):
 class YandexDirectClientError(YandexDirectApiError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.jdata = json.loads(response.content.decode("utf-8"))
+        self.jdata = json.loads(self.response.content.decode("utf-8"))
         error_data = self.jdata.get("error", {})
         self.code = error_data.get("error_code")
         self.request_id = error_data.get("request_id")
