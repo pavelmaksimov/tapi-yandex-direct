@@ -2,7 +2,7 @@
 
 __author__ = 'Pavel Maksimov'
 __email__ = 'vur21@ya.com'
-__version__ = '2020.12.14'
+__version__ = '2020.12.15'
 
 
 from .tapi_yandex_direct import YandexDirect, GetTokenYandexDirect
