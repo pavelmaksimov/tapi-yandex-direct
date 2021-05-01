@@ -1,4 +1,3 @@
-# coding: utf-8
 
 RESOURCE_MAPPING_V5 = {
     "adextensions": {
@@ -97,11 +96,20 @@ RESOURCE_MAPPING_V5 = {
         "resource": "json/v5/reports",
         "docs": "https://yandex.ru/dev/direct/doc/reports/reports-docpage/",
     },
-}
-
-RESOURCE_MAPPING_OAUTH = {
     "debugtoken": {
         "resource": "oauth.yandex.ru/authorize?response_type=token&client_id={client_id}",
         "docs": "https://yandex.ru/dev/direct/doc/dg/concepts/auth-token-docpage/",
+    },
+    "feeds": {
+        "resource": "json/v5/feeds",
+        "docs": "https://yandex.ru/dev/direct/doc/ref-v5/feeds/feeds.html",
+    },
+    "smartadtargets": {
+        "resource": "json/v5/smartadtargets",
+        "docs": "https://yandex.ru/dev/direct/doc/ref-v5/smartadtargets/smartadtargets.html",
+    },
+    "businesses": {
+        "resource": "json/v5/businesses",
+        "docs": "https://yandex.ru/dev/direct/doc/ref-v5/businesses/businesses.html",
     },
 }

@@ -1,50 +1,55 @@
-# Python библиотека [API Яндекс Директ](https://yandex.ru/dev/direct/)
+# Python client for [API Yandex Direct](https://yandex.ru/dev/metrika/doc/api2/concept/about-docpage/)
 
-Написано на версии python 3.5
+![Supported Python Versions](https://img.shields.io/static/v1?label=python&message=>=3.5&color=green)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/vintasoftware/tapioca-wrapper/master/LICENSE)
+[![Downloads](https://pepy.tech/badge/tapi-yandex-direct)](https://pepy.tech/project/tapi-yandex-direct)
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
-## Установка
-```
-pip install tapi-yandex-direct
-```
+## Installation
 
-## Примеры
+Prev version
 
-Примеры находятся в [Ipython Notebook](https://github.com/pavelmaksimov/tapi-yandex-direct/blob/master/examples.ipynb)
+    pip install --upgrade tapi-yandex-direct==2020.12.15
 
+Last version. Has backward incompatible changes.
+
+    pip install --upgrade tapi-yandex-direct==2021.5.1
+
+## Examples
+
+[Ipython Notebook](https://github.com/pavelmaksimov/tapi-yandex-direct/blob/master/examples.ipynb)
+
+
+## Documentation
 [Справка](https://yandex.ru/dev/direct/) Api Яндекс Директ
 
-## Документация API сравочника Яндекс.Директ
+
+### Client params
 ```python
 from tapi_yandex_direct import YandexDirect
 
-ACCESS_TOKEN = {ваш токен доступа}
+ACCESS_TOKEN = {your_access_token}
 
-# Обязательные параметры помечены звездочкой.
-api = YandexDirect(
-    # *Токен доступа.
-    access_token=ACCESS_TOKEN, 
-    # True включить песочницу.
+client = YandexDirect(
+    # Обязательные параметры:
+
+    access_token=ACCESS_TOKEN,
+    # Если вы делаете запросы из под агентского аккаунта,
+    # вам нужно указать логин аккаунта, если нет, можно не указывать.
+    login="{login}",
+
+    # Опциональные параметры:
+
+    # Включить песочницу.
     # По умолчанию False
     is_sandbox=False,
     # Когда False не будет повторять запрос, если закончаться баллы.
     # По умолчанию False
     retry_if_not_enough_units=False,
-    # Когда True cделает несколько запросов, если кол-во идентификаторов 
-    # в условиях фильтрации SelectionCriteria будет больше, 
-    # чем можно запросить в одном запросе. Работает для метода "get".
-    # По умолчанию True
-    auto_request_generation=True,
-    # Когда True будет посылать запросы, пока не получит все объекты.
-    # По умолчанию True
-    receive_all_objects=True,
-    # Если вы делаете запросы из под агентского аккаунта, 
-    # вам нужно указать логин аккаунта для которого будете делать запросы.
-    #login="{логин аккаунта Я.Директ}"
-    # Язык в котором будут возвращены данные справочников и ошибок. 
+    # Язык в котором будут возвращены данные справочников и ошибок.
     # По умолчанию "ru". Доступны "en" и другие.
     language="ru",
-    # Повторять запрос, если будут превышениы лимиты 
-    # на кол-во отчетов или запросов.
+    # Повторять запрос, если будут превышены лимиты на кол-во отчетов или запросов.
     # По умолчанию True.
     retry_if_exceeded_limit=True,
     # Кол-во повторов при возникновении серверных ошибок.
@@ -53,17 +58,56 @@ api = YandexDirect(
 )
 ```
 
-Генерация класса **YandexDirect** происходит динамически, 
-поэтому узнать о добавленных методах, можно так.
+### Resource methods
+The `YandexDirect` class is generated dynamically,
+so you can learn about the added methods like this.
 ```python
-print(dir(api))
+print(dir(client))
+[
+    "adextensions",
+    "adgroups",
+    "adimages",
+    "ads",
+    "agencyclients",
+    "audiencetargets",
+    "bidmodifiers",
+    "bids",
+    "businesses",
+    "campaigns",
+    "changes",
+    "clients",
+    "creatives",
+    "debugtoken",
+    "dictionaries",
+    "dynamicads",
+    "feeds",
+    "keywordbids",
+    "keywords",
+    "keywordsresearch",
+    "leads",
+    "negativekeywordsharedsets",
+    "reports",
+    "retargeting",
+    "sitelinks",
+    "smartadtargets",
+    "turbopages",
+    "vcards",
+]
 ```
+or look into [resource mapping](tapi_yandex_direct/resource_mapping.py)
 
-Запросы к API выполняются по протоколу HTTPS методом POST.
-Входные структуры данных передаются в теле запроса.
+### Request
+
+API requests are made over HTTPS using the POST method.
+Input data structures are passed in the body of the request.
 
 ```python
-# Получить все кампании.
+import datetime as dt
+
+from tapi2.tapi import TapiClient
+
+
+# Get campaigns.
 body = {
     "method": "get",
     "params": {
@@ -71,9 +115,24 @@ body = {
         "FieldNames": ["Id","Name"],
     },
 }
-result = api.campaigns().post(data=body)
+campaigns = client.campaigns().post(data=body)
+assert isinstance(campaigns, TapiClient)
+print(campaigns)
 
-# Создать кампанию.
+# <TapiClient object
+# {   'result': {   'Campaigns': [   {   'Id': 338157,
+#                                        'Name': 'Test API Sandbox campaign 1'},
+#                                    {   'Id': 338158,
+#                                        'Name': 'Test API Sandbox campaign 2'}],
+#                   'LimitedBy': 2}}>
+
+
+# Extract raw data.
+data = campaigns.data
+assert isinstance(data, dict)
+
+
+# Create a campaign.
 body = {
     "method": "add",
     "params": {
@@ -96,19 +155,51 @@ body = {
         ]
     }
 }
-result = api.campaigns().post(data=body)
+result = client.campaigns().post(data=body)
+assert isinstance(result, TapiClient)
+print(result)
+
+# <TapiClient object
+# {'result': {'AddResults': [{'Id': 417065}]}}>
+
+# Extract raw data.
+data = campaigns.data
+
+assert isinstance(data, dict)
+
+print(result)
+
+# {'result': {'AddResults': [{'Id': 417066}]}}
 ```
 
-#### Формат возвращаемых данных.
-Данные возвращаются в формате объекта **Tapi**.
+
+### Client methods
+
+Result extraction method.
 
 ```python
-print(result)
-print(result().status_code)
-print(result().response)
-print(result().response.headers)
-``` 
-##### Вернуть в формате **JSON**
+from tapi2.tapi import TapiClient
+
+body = {
+    "method": "get",
+    "params": {
+        "SelectionCriteria": {},
+        "FieldNames": ["Id","Name"],
+    },
+}
+campaigns: TapiClient = client.campaigns().post(data=body)
+
+# Request response.
+print(campaigns.response)
+print(campaigns.request_kwargs)
+print(campaigns.status_code)
+print(campaigns.data)
+```
+
+### .extract()
+
+Result extraction method.
+
 ```python
 body = {
     "method": "get",
@@ -117,47 +208,125 @@ body = {
         "FieldNames": ["Id","Name"],
     },
 }
-result = api.campaigns().post(data=body)
-print(result().data)
-[{'result': {'Campaigns': [{'Id': 338151,
-                            'Name': 'Test API Sandbox campaign 1'}],
-             'LimitedBy': 1}},
- {'result': {'Campaigns': [{'Id': 338152,
-                            'Name': 'Test API Sandbox campaign 2'}],
-             'LimitedBy': 2}},]
-# В списке может находится несколько ответов.
+campaigns = client.campaigns().post(data=body)
+campaigns_list = campaigns().extract()
+
+assert isinstance(campaigns_list, list)
+
+print(campaigns_list)
+# [{'Id': 338157, 'Name': 'Test API Sandbox campaign 1'},
+#  {'Id': 338158, 'Name': 'Test API Sandbox campaign 2'}]
 ```
 
-##### Преобразование ответа
 
-Для ответов API Я.Директ есть функция преобразования **transform**.
-Она извлечет данные из словаря и соединит все ответы в один список, 
-если запросов было несколько.
-Работает только запросов с методом "get".
+### .items()
+
+Iterating result items.
+
 ```python
-print(result().transform())
-[{'Id': 338151, 'Name': 'Test API Sandbox campaign 1'},
- {'Id': 338152, 'Name': 'Test API Sandbox campaign 2'}]
+body = {
+    "method": "get",
+    "params": {
+        "SelectionCriteria": {},
+        "FieldNames": ["Id","Name"],
+    },
+}
+campaigns = client.campaigns().post(data=body)
+
+for item in campaigns().items():
+    print(item)
+    # {'Id': 338157, 'Name': 'Test API Sandbox campaign 1'}
+    assert isinstance(item, dict)
 ```
 
 
-## Документация API отчетов Яндекс.Директ
+### .pages()
+
+Iterating to get all the data.
+
+```python
+from tapi2.tapi import TapiClient
+
+body = {
+    "method": "get",
+    "params": {
+        "SelectionCriteria": {},
+        "FieldNames": ["Id","Name"],
+        "Page": {"Limit": 2}
+    },
+}
+campaigns = client.campaigns().post(data=body)
+
+# Iterating requests data.
+for page in campaigns().pages():
+    assert isinstance(page, TapiClient)
+    assert isinstance(page.data, list)
+
+    print(page.data)
+    # [{'Id': 338157, 'Name': 'Test API Sandbox campaign 1'},
+    #  {'Name': 'Test API Sandbox campaign 2', 'Id': 338158}]
+
+    # Iterating items of page data.
+    for item in page().items():
+        print(item)
+        # {'Id': 338157, 'Name': 'Test API Sandbox campaign 1'}
+        assert isinstance(item, dict)
+```
+
+
+### .iter_items()
+
+After each request, iterates over the items of the request data.
+
+```python
+from tapi2.tapi import TapiClient
+
+body = {
+    "method": "get",
+    "params": {
+        "SelectionCriteria": {},
+        "FieldNames": ["Id","Name"],
+        "Page": {"Limit": 2}
+    },
+}
+campaigns = client.campaigns().post(data=body)
+
+# Iterates through the elements of all data.
+for item in campaigns().iter_items():
+    assert isinstance(item, dict)
+    print(item)
+
+# {'Name': 'MyCampaignTest', 'Id': 417065}
+# {'Name': 'MyCampaignTest', 'Id': 417066}
+# {'Id': 338157, 'Name': 'Test API Sandbox campaign 1'}
+# {'Name': 'Test API Sandbox campaign 2', 'Id': 338158}
+# {'Id': 338159, 'Name': 'Test API Sandbox campaign 3'}
+# {'Name': 'MyCampaignTest', 'Id': 415805}
+# {'Id': 416524, 'Name': 'MyCampaignTest'}
+# {'Id': 417056, 'Name': 'MyCampaignTest'}
+# {'Id': 417057, 'Name': 'MyCampaignTest'}
+# {'Id': 417058, 'Name': 'MyCampaignTest'}
+# {'Id': 417065, 'Name': 'MyCampaignTest'}
+# {'Name': 'MyCampaignTest', 'Id': 417066}
+```
+
+
+## Reports
+
 ```python
 from tapi_yandex_direct import YandexDirect
 
 ACCESS_TOKEN = {ваш токен доступа}
 
-# Обязательные параметры помечены звездочкой.
-api = YandexDirect(
-    # *Токен доступа.
-    access_token=ACCESS_TOKEN, 
+client = YandexDirect(
+    access_token=ACCESS_TOKEN,
     # True включить песочницу.
     # По умолчанию False
     is_sandbox=False,
-    # Если вы делаете запросы из под агентского аккаунта, 
+    # Если вы делаете запросы из под агентского аккаунта,
     # вам нужно указать логин аккаунта для которого будете делать запросы.
     #login="{логин аккаунта Я.Директ}"
-    # Повторять запрос, если будут превышениы лимиты 
+    # Повторять запрос, если будут превышениы лимиты
     # на кол-во отчетов или запросов.
     # По умолчанию True.
     retry_if_exceeded_limit=True,
@@ -170,9 +339,9 @@ api = YandexDirect(
     # Когда True, будет повторять запрос, пока отчет не будет готов.
     # По умолчанию True
     wait_report=True,
-    # Если заголовок указан, денежные значения в отчете возвращаются в валюте 
-    # с точностью до двух знаков после запятой. Если не указан, денежные 
-    # значения возвращаются в виде целых чисел — сумм в валюте, 
+    # Если заголовок указан, денежные значения в отчете возвращаются в валюте
+    # с точностью до двух знаков после запятой. Если не указан, денежные
+    # значения возвращаются в виде целых чисел — сумм в валюте,
     # умноженных на 1 000 000.
     # По умолчанию False
     return_money_in_micros=False,
@@ -202,41 +371,91 @@ body = {
         "IncludeDiscount": "YES"
     }
 }
-result = api.reports().post(data=body)
-print(result().data)
-'Date\tCampaignId\tClicks\tCost\n'
-'2019-09-02\t338151\t12578\t9210750000\n'
-
-# Преобразование.
-print(result().transform())
-[
-    ['Date', 'CampaignId', 'Clicks', 'Cost'], 
-    ['2019-09-02', '338151', '12578', '9210750000'], 
-]
+report = client.reports().post(data=body)
+print(report.data)
+# 'Date\tCampaignId\tClicks\tCost\n'
+# '2019-09-02\t338151\t12578\t9210750000\n'
 ```
 
-## Фичи
-Открыть документация метода
+
+### .columns
+
+Extract column names.
 ```python
-api.campaigns().open_docs()
+report = client.reports().post(data=body)
+print(report.columns)
+# ['Date', 'CampaignId', 'Clicks', 'Cost']
 ```
 
-Послать запрос в браузере.
+
+### .to_lines()
+
 ```python
-api.campaigns().open_in_browser()
+report = client.reports().post(data=body)
+print(report().to_lines())
+# list[str]
+# [..., '2019-09-02\t338151\t12578\t9210750000']
 ```
 
 
-## Зависимости
-- requests 
-- [tapi_wrapper](https://github.com/pavelmaksimov/tapi-wrapper) 
+### .to_values()
+
+```python
+report = client.reports().post(data=body)
+print(report().to_lines())
+# list[list[str]]
+# [..., ['2019-09-02', '338151', '12578', '9210750000']]
+```
+
+
+### .to_dict()
+
+```python
+report = client.reports().post(data=body)
+print(report().to_lines())
+# list[dict]
+# [..., {'Date': '2019-09-02', 'CampaignId': '338151', 'Clicks': '12578', 'Cost': 9210750000'}]
+```
+
+
+### .to_columns()
+
+```python
+report = client.reports().post(data=body)
+print(report().to_lines())
+# list[list[str], list[str], list[str], list[str]]
+# [[..., '2019-09-02'], [..., '338151'], [..., '12578'], [..., '9210750000']]
+```
+
+
+## Features
+
+Information about the resource.
+```python
+client.campaigns().info()
+```
+
+Open resource documentation
+```python
+client.campaigns().open_docs()
+```
+
+Send a request in the browser.
+```python
+client.campaigns().open_in_browser()
+```
+
+
+## Dependences
+- requests
+- [tapi_wrapper](https://github.com/pavelmaksimov/tapi-wrapper)
 
 ## Автор
 Павел Максимов
 
-Связаться со мной можно в 
-[Телеграм](https://t.me/pavel_maksimow) 
-и в 
+Связаться со мной можно в
+[Телеграм](https://t.me/pavel_maksimow)
+и в
 [Facebook](https://www.facebook.com/pavel.maksimow)
 
 Удачи тебе, друг! Поставь звездочку ;)

@@ -1,42 +1,52 @@
-# -*- coding: utf-8 -*-
-import logging
-import json
+from typing import Dict, Union
+
+from requests import Response
+from tapi2.tapi import TapiClient
 
 
 class YandexDirectApiError(Exception):
-    def __init__(self, response, message=None, *args, **kwargs):
+    def __init__(
+        self,
+        response: Response,
+        data: Union[str, dict],
+        client: TapiClient,
+        *args,
+        **kwargs
+    ):
         self.response = response
-        self.message = message
+        self.data = data
+        self.client = client
 
     def __str__(self):
-        logging.info("HEADERS = " + str(self.response.headers))
-        logging.info("URL = " + self.response.url)
-        return "{}{} {} {}".format(
-            self.message + " " or "",
+        return "{} {} {}\nHEADERS = {}\nURL = {}".format(
             self.response.status_code,
             self.response.reason,
-            self.response.text,
+            self.data or self.response.text,
+            self.response.headers,
+            self.response.url,
         )
 
 
-class YandexDirectServerError(YandexDirectApiError):
-    pass
-
-
 class YandexDirectClientError(YandexDirectApiError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.jdata = json.loads(self.response.content.decode("utf-8"))
-        error_data = self.jdata.get("error", {})
-        self.code = error_data.get("error_code")
-        self.request_id = error_data.get("request_id")
-        self.error_string = error_data.get("error_string")
-        self.error_detail = error_data.get("error_detail")
+    def __init__(
+        self,
+        response: Response,
+        message: Dict[str, dict],
+        client: TapiClient,
+        *args,
+        **kwargs
+    ):
+        self.error_code = message["error"]["error_code"]
+        self.request_id = message["error"]["request_id"]
+        self.error_string = message["error"]["error_string"]
+        self.error_detail = message["error"]["error_detail"]
+        super().__init__(response, message, client, *args, **kwargs)
 
     def __str__(self):
-        str = "\n\trequest_id={},\n\tcode={},\n\terror_string={},\n\terror_detail={}"
-        return str.format(
-            self.request_id, self.code, self.error_string, self.error_detail
+        text = "request_id={}, error_code={}, error_string={}, error_detail={}"
+
+        return text.format(
+            self.request_id, self.error_code, self.error_string, self.error_detail
         )
 
 
@@ -45,15 +55,24 @@ class YandexDirectTokenError(YandexDirectClientError):
         super().__init__(*args, **kwargs)
 
 
-class YandexDirectLimitError(YandexDirectApiError):
+class YandexDirectNotEnoughUnitsError(YandexDirectClientError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
+class YandexDirectRequestsLimitError(YandexDirectClientError):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class BackwardCompatibilityError(Exception):
+    def __init__(self, name):
+        self.name = name
+
     def __str__(self):
         return (
-            "{} {} Исчерпан лимит запросов. "
-            "Повторите запрос через некоторое время.\n "
-            "{}".format(
-                self.response.status_code, self.response.reason, self.response.text
-            )
-        )
+            "Starting from version 2021.4.26, this {} is deprecated and not supported. "
+            "Install a later version "
+            "'pip install --upgrade tapi-yandex-metrika==2020.12.15'. "
+            "Info https://github.com/pavelmaksimov/tapi-yandex-metrika"
+        ).format(self.name)

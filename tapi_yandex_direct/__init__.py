@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 
 __author__ = 'Pavel Maksimov'
-__email__ = 'vur21@ya.com'
-__version__ = '2020.12.15'
+__email__ = 'vur21@ya.ru'
+__version__ = '2021.5.1'
 
 
-from .tapi_yandex_direct import YandexDirect, GetTokenYandexDirect
 from .resource_mapping import *
+from .tapi_yandex_direct import YandexDirect
