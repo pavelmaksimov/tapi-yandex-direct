@@ -1,6 +1,6 @@
 # Python client for [API Yandex Direct](https://yandex.ru/dev/metrika/doc/api2/concept/about-docpage/)
 
-![Supported Python Versions](https://img.shields.io/static/v1?label=python&message=>=3.5&color=green)
+![Supported Python Versions](https://img.shields.io/static/v1?label=python&message=>=3.6&color=green)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/vintasoftware/tapioca-wrapper/master/LICENSE)
 [![Downloads](https://pepy.tech/badge/tapi-yandex-direct)](https://pepy.tech/project/tapi-yandex-direct)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
@@ -13,7 +13,7 @@ Prev version
 
 Last version. Has backward incompatible changes.
 
-    pip install --upgrade tapi-yandex-direct==2021.5.1
+    pip install --upgrade tapi-yandex-direct==2021.5.3
 
 ## Examples
 
