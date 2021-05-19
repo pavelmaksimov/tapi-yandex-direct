@@ -402,7 +402,7 @@ print(report().to_lines())
 
 ```python
 report = client.reports().post(data=body)
-print(report().to_lines())
+print(report().to_values())
 # list[list[str]]
 # [..., ['2019-09-02', '338151', '12578', '9210750000']]
 ```
@@ -412,7 +412,7 @@ print(report().to_lines())
 
 ```python
 report = client.reports().post(data=body)
-print(report().to_lines())
+print(report().to_dict())
 # list[dict]
 # [..., {'Date': '2019-09-02', 'CampaignId': '338151', 'Clicks': '12578', 'Cost': 9210750000'}]
 ```
@@ -422,7 +422,7 @@ print(report().to_lines())
 
 ```python
 report = client.reports().post(data=body)
-print(report().to_lines())
+print(report().to_columns())
 # list[list[str], list[str], list[str], list[str]]
 # [[..., '2019-09-02'], [..., '338151'], [..., '12578'], [..., '9210750000']]
 ```
@@ -459,3 +459,7 @@ client.campaigns().open_in_browser()
 [Facebook](https://www.facebook.com/pavel.maksimow)
 
 Удачи тебе, друг! Поставь звездочку ;)
+
+
+# TODO: рассказать об параметрах ограничения итерации
+# Add Changelog
