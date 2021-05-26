@@ -6,11 +6,8 @@ from tapi_yandex_direct import YandexDirect
 
 logging.basicConfig(level=logging.DEBUG)
 
-ACCESS_TOKEN = ""
-CLIENT_ID = ""
-
 client = YandexDirect(
-    access_token=ACCESS_TOKEN,
+    access_token="",
     is_sandbox=False,
     retry_if_not_enough_units=False,
     retry_if_exceeded_limit=False,
