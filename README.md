@@ -13,7 +13,7 @@ Prev version
 
 Last version. Has backward incompatible changes.
 
-    pip install --upgrade tapi-yandex-direct==2021.5.3
+    pip install --upgrade tapi-yandex-direct==2021.5.25
 
 ## Examples
 
@@ -422,7 +422,9 @@ client.campaigns().open_in_browser()
 
 
 ## CHANGELOG
-
+v2021.5.25
+- Add stub file (syntax highlighting)
+- Add methods 'iter_dicts', 'to_dicts'
 
 
 ## Автор
