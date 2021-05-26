@@ -192,7 +192,7 @@ def test_get_report():
     assert report().to_values() == [["value1", "value2"], ["value10", "value20"]]
     assert report().to_lines() == ["value1\tvalue2", "value10\tvalue20"]
     assert report().to_columns() == [["value1", "value10"], ["value2", "value20"]]
-    assert report().to_dict() == [
+    assert report().to_dicts() == [
         {"col1": "value1", "col2": "value2"},
         {"col1": "value10", "col2": "value20"},
     ]

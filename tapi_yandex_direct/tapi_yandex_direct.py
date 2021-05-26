@@ -253,9 +253,7 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
             return True
 
         elif error_code == 56 and api_params.get("retry_if_exceeded_limit", True):
-            logger.warning(
-                "Method request limit exceeded. Re-request after 10 seconds"
-            )
+            logger.warning("Method request limit exceeded. Re-request after 10 seconds")
             time.sleep(10)
             return True
 
@@ -318,6 +316,10 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
         for line in self.iter_lines(**kwargs):
             yield line.split("\t")
 
+    def iter_dicts(self, **kwargs) -> Iterator[dict]:
+        for line in self.iter_lines(**kwargs):
+            yield dict(zip(kwargs["store"]["columns"], line.split("\t")))
+
     def to_values(self, **kwargs) -> List[list]:
         return list(self.iter_values(**kwargs))
 
@@ -333,7 +335,13 @@ class YandexDirectClientAdapter(JSONAdapterMixin, TapiAdapter):
         return columns
 
     def to_dict(self, **kwargs) -> List[dict]:
-        return [dict(zip(kwargs["store"]["columns"], values)) for values in self.iter_values(**kwargs)]
+        return [
+            dict(zip(kwargs["store"]["columns"], values))
+            for values in self.iter_values(**kwargs)
+        ]
+
+    def to_dicts(self, **kwargs) -> List[dict]:
+        return self.to_dict(**kwargs)
 
     def extract(
         self, data: dict, response: Response, request_kwargs: dict, **kwargs
