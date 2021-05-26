@@ -28,39 +28,31 @@ Last version. Has backward incompatible changes.
 ```python
 from tapi_yandex_direct import YandexDirect
 
-ACCESS_TOKEN = {your_access_token}
+ACCESS_TOKEN = "{your_access_token}"
 
 client = YandexDirect(
-    # Обязательные параметры:
+    # Required parameters:
 
     access_token=ACCESS_TOKEN,
-    # Если вы делаете запросы из под агентского аккаунта,
-    # вам нужно указать логин аккаунта, если нет, можно не указывать.
+    # If you are making inquiries from an agent account, you must be sure to specify the account login.
     login="{login}",
 
-    # Опциональные параметры:
+    # Optional parameters:
 
-    # Включить песочницу.
-    # По умолчанию False
+    # Enable sandbox.
     is_sandbox=False,
-    # Когда False не будет повторять запрос, если закончаться баллы.
-    # По умолчанию False
+    # Repeat request when units run out
     retry_if_not_enough_units=False,
-    # Язык в котором будут возвращены данные справочников и ошибок.
-    # По умолчанию "ru". Доступны "en" и другие.
+    # The language in which the data for directories and errors will be returned.
     language="ru",
-    # Повторять запрос, если будут превышены лимиты на кол-во отчетов или запросов.
-    # По умолчанию True.
+    # Repeat the request if the limits on the number of reports or requests are exceeded.
     retry_if_exceeded_limit=True,
-    # Кол-во повторов при возникновении серверных ошибок.
-    # По умолчанию 5 раз.
+    # Number of retries when server errors occur.
     retries_if_server_error=5
 )
 ```
 
 ### Resource methods
-The `YandexDirect` class is generated dynamically,
-so you can learn about the added methods like this.
 ```python
 print(dir(client))
 [
@@ -104,9 +96,6 @@ Input data structures are passed in the body of the request.
 ```python
 import datetime as dt
 
-from tapi2.tapi import TapiClient
-
-
 # Get campaigns.
 body = {
     "method": "get",
@@ -116,9 +105,7 @@ body = {
     },
 }
 campaigns = client.campaigns().post(data=body)
-assert isinstance(campaigns, TapiClient)
 print(campaigns)
-
 # <TapiClient object
 # {   'result': {   'Campaigns': [   {   'Id': 338157,
 #                                        'Name': 'Test API Sandbox campaign 1'},
@@ -156,19 +143,14 @@ body = {
     }
 }
 result = client.campaigns().post(data=body)
-assert isinstance(result, TapiClient)
 print(result)
-
 # <TapiClient object
 # {'result': {'AddResults': [{'Id': 417065}]}}>
 
 # Extract raw data.
 data = campaigns.data
-
 assert isinstance(data, dict)
-
 print(result)
-
 # {'result': {'AddResults': [{'Id': 417066}]}}
 ```
 
@@ -178,8 +160,6 @@ print(result)
 Result extraction method.
 
 ```python
-from tapi2.tapi import TapiClient
-
 body = {
     "method": "get",
     "params": {
@@ -187,7 +167,7 @@ body = {
         "FieldNames": ["Id","Name"],
     },
 }
-campaigns: TapiClient = client.campaigns().post(data=body)
+campaigns = client.campaigns().post(data=body)
 
 # Request response.
 print(campaigns.response)
@@ -210,9 +190,7 @@ body = {
 }
 campaigns = client.campaigns().post(data=body)
 campaigns_list = campaigns().extract()
-
 assert isinstance(campaigns_list, list)
-
 print(campaigns_list)
 # [{'Id': 338157, 'Name': 'Test API Sandbox campaign 1'},
 #  {'Id': 338158, 'Name': 'Test API Sandbox campaign 2'}]
@@ -245,8 +223,6 @@ for item in campaigns().items():
 Iterating to get all the data.
 
 ```python
-from tapi2.tapi import TapiClient
-
 body = {
     "method": "get",
     "params": {
@@ -259,9 +235,7 @@ campaigns = client.campaigns().post(data=body)
 
 # Iterating requests data.
 for page in campaigns().pages():
-    assert isinstance(page, TapiClient)
     assert isinstance(page.data, list)
-
     print(page.data)
     # [{'Id': 338157, 'Name': 'Test API Sandbox campaign 1'},
     #  {'Name': 'Test API Sandbox campaign 2', 'Id': 338158}]
@@ -279,8 +253,6 @@ for page in campaigns().pages():
 After each request, iterates over the items of the request data.
 
 ```python
-from tapi2.tapi import TapiClient
-
 body = {
     "method": "get",
     "params": {
@@ -316,43 +288,41 @@ for item in campaigns().iter_items():
 ```python
 from tapi_yandex_direct import YandexDirect
 
-ACCESS_TOKEN = {ваш токен доступа}
+ACCESS_TOKEN = "{ваш токен доступа}"
 
 client = YandexDirect(
+    # Required parameters:
+
     access_token=ACCESS_TOKEN,
-    # True включить песочницу.
-    # По умолчанию False
+    # If you are making inquiries from an agent account, you must be sure to specify the account login.
+    login="{login}",
+
+    # Optional parameters:
+
+    # Enable sandbox.
     is_sandbox=False,
-    # Если вы делаете запросы из под агентского аккаунта,
-    # вам нужно указать логин аккаунта для которого будете делать запросы.
-    #login="{логин аккаунта Я.Директ}"
-    # Повторять запрос, если будут превышениы лимиты
-    # на кол-во отчетов или запросов.
-    # По умолчанию True.
+    # Repeat request when units run out
+    retry_if_not_enough_units=False,
+    # The language in which the data for directories and errors will be returned.
+    language="ru",
+    # Repeat the request if the limits on the number of reports or requests are exceeded.
     retry_if_exceeded_limit=True,
-    # Кол-во повторов при возникновении серверных ошибок.
-    # По умолчанию 5 раз.
+    # Number of retries when server errors occur.
     retries_if_server_error=5,
-    # Режим формирования отчета: online, offline или auto.
-    # По умолчанию "auto"
-    processing_mode='offline',
-    # Когда True, будет повторять запрос, пока отчет не будет готов.
-    # По умолчанию True
+
+    # Report resource parameters:
+
+    # Report generation mode: online, offline or auto.
+    processing_mode="offline",
+    # When requesting a report, it will wait until the report is prepared and download it.
     wait_report=True,
-    # Если заголовок указан, денежные значения в отчете возвращаются в валюте
-    # с точностью до двух знаков после запятой. Если не указан, денежные
-    # значения возвращаются в виде целых чисел — сумм в валюте,
-    # умноженных на 1 000 000.
-    # По умолчанию False
+    # Monetary values in the report are returned in currency with an accuracy of two decimal places.
     return_money_in_micros=False,
-    # Не выводить в отчете строку с названием отчета и диапазоном дат.
-    # По умолчанию True
+    # Do not display a line with the report name and date range in the report.
     skip_report_header=True,
-    # Не выводить в отчете строку с названиями полей.
-    # По умолчанию False
+    # Do not display a line with field names in the report.
     skip_column_header=False,
-    # Не выводить в отчете строку с количеством строк статистики.
-    # По умолчанию True
+    # Do not display a line with the number of statistics lines in the report.
     skip_report_summary=True,
 )
 
@@ -432,7 +402,7 @@ print(report().to_columns())
 
 Information about the resource.
 ```python
-client.campaigns().info()
+client.campaigns().help()
 ```
 
 Open resource documentation
@@ -450,6 +420,11 @@ client.campaigns().open_in_browser()
 - requests
 - [tapi_wrapper](https://github.com/pavelmaksimov/tapi-wrapper)
 
+
+## CHANGELOG
+
+
+
 ## Автор
 Павел Максимов
 
@@ -459,7 +434,3 @@ client.campaigns().open_in_browser()
 [Facebook](https://www.facebook.com/pavel.maksimow)
 
 Удачи тебе, друг! Поставь звездочку ;)
-
-
-# TODO: рассказать об параметрах ограничения итерации
-# Add Changelog
