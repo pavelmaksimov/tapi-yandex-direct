@@ -34,10 +34,13 @@ setup(
     author_email="vur21@ya.ru",
     url="https://github.com/pavelmaksimov/tapi-yandex-direct",
     packages=[package],
-    include_package_data=True,
-    install_requires=["requests", "orjson", "tapi-wrapper2>=0.1.1,<0.2"],
+    include_package_data=False,
+    install_requires=["requests", "orjson", "tapi-wrapper2>=0.1.2,<1.0"],
     license="MIT",
     zip_safe=False,
     keywords="tapi,wrapper,yandex,metrika,api,direct,яндекс,директ,апи",
     test_suite="tests",
+    package_data={
+        package: ["*"],
+    },
 )

@@ -15,7 +15,7 @@ CLIENT_ID = data_loaded["client_id"]
 
 api = YandexDirect(
     access_token=ACCESS_TOKEN,
-    is_sandbox=True,
+    is_sandbox=False,
     retry_if_not_enough_units=False,
     retry_if_exceeded_limit=False,
     retries_if_server_error=5,
@@ -29,8 +29,8 @@ api = YandexDirect(
 )
 
 
-def test_get_debugtoken():
-    api.debugtoken(client_id=CLIENT_ID).open_in_browser()
+# def test_get_debugtoken():
+#     api.debugtoken(client_id=CLIENT_ID).open_in_browser()
 
 
 def test_get_clients():
@@ -51,23 +51,13 @@ def test_get_campaigns():
         data={
             "method": "get",
             "params": {
-                "SelectionCriteria": {},
+                "SelectionCriteria": {"States": ["ON", "OFF"]},
                 "FieldNames": ["Id", "Name", "State", "Status", "Type"],
-                "Page": {"Limit": 2},
             },
+                "Page": {"Limit": 1000},
         }
     )
-    from requests import Response
-    for page in campaigns().pages():
-        print(page)
-        r: Response = page().response
-        print(r.request.method)
-
-        # for item in campaigns().items():
-        #     print(item)
-
-    for item in campaigns().iter_items():
-        print(item)
+    print(campaigns)
 
 
 def test_method_add():
