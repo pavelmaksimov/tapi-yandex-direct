@@ -378,11 +378,11 @@ print(report().to_values())
 ```
 
 
-### .to_dict()
+### .to_dicts()
 
 ```python
 report = client.reports().post(data=body)
-print(report().to_dict())
+print(report().to_dicts())
 # list[dict]
 # [..., {'Date': '2019-09-02', 'CampaignId': '338151', 'Clicks': '12578', 'Cost': 9210750000'}]
 ```

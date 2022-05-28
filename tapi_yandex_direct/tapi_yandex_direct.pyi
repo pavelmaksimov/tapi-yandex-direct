@@ -2,7 +2,6 @@ from typing import List, Iterator, Union
 
 from requests import Response
 
-
 class YandexDirectBaseMethodsClientResponse:
     @property
     def data(self) -> dict: ...
@@ -37,7 +36,7 @@ class YandexDirectClientExecutor:
     def help(self) -> YandexDirectClientExecutor:
         """Print docs of resource."""
     def get(
-        self, *, params: dict = None, data: dict = None
+        self, *, params: dict = None, data: dict = None, headers: dict = None
     ) -> YandexDirectClientExecutorResponse:
         """
         Send HTTP 'GET' request.
@@ -46,7 +45,7 @@ class YandexDirectClientExecutor:
         :param data: send data in the body of the request
         """
     def post(
-        self, *, params: dict = None, data: dict = None
+        self, *, params: dict = None, data: dict = None, headers: dict = None
     ) -> YandexDirectClientExecutorResponse:
         """
         Send HTTP 'POST' request.
@@ -84,7 +83,7 @@ class YandexDirectClientReportExecutor:
     def help(self) -> YandexDirectClientReportExecutor:
         """Print docs of resource."""
     def post(
-        self, *, params: dict = None, data: dict = None
+        self, *, params: dict = None, data: dict = None, headers: dict = None
     ) -> YandexDirectClientReportExecutorResponse:
         """
         Send HTTP 'POST' request.
