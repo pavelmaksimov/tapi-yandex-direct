@@ -1,0 +1,23 @@
+{
+    "params": {
+        "SelectionCriteria": {},
+        "FieldNames": [
+            "CampaignType",
+            "Clicks",
+            "Cost"
+        ],
+        "OrderBy": [
+            {
+                "Field": "CampaignType"
+            }
+        ],
+        "ReportType": "ACCOUNT_PERFORMANCE_REPORT",
+        "DateRangeType": "LAST_365_DAYS",
+        "Format": "TSV",
+        "IncludeVAT": "YES",
+        "IncludeDiscount": "YES",
+        "Page": {
+            "Limit": 10
+        }
+    }
+}

@@ -19,6 +19,13 @@ Last version. Has backward incompatible changes.
 
 [Ipython Notebook](https://github.com/pavelmaksimov/tapi-yandex-direct/blob/master/examples.ipynb)
 
+[Script to export data to a file](scripts/yandex_direct_export_to_file.py)
+
+    python yandex_direct_export_to_file.py --help
+    python yandex_direct_export_to_file.py --body_filepath body-clients.json --token TOKEN --resource clients --filepath clients.tsv
+    python yandex_direct_export_to_file.py --body_filepath body-report.json --token TOKEN --resource reports --filepath report-with-login-column.tsv --extra_columns login
+    python yandex_direct_export_to_file.py --body_filepath body-report.json --token TOKEN --resource reports --filepath report.tsv
+
 
 ## Documentation
 [Справка](https://yandex.ru/dev/direct/) Api Яндекс Директ
